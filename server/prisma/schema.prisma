@@ -65,6 +65,7 @@ model ServiceRequest {
   attendees         Int                  // Number of attendees
   
   // Service Details
+  serviceType       String               // Type of catering service
   description       String?              @db.Text
   
   // Financial Information

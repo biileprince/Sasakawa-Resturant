@@ -11,11 +11,33 @@ export default function RequestsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['requests'],
     queryFn: getRequests,
+    enabled: isSignedIn, // Only fetch when user is signed in
   });
 
   useEffect(() => {
     if (error) push('Failed to load requests', 'error');
   }, [error, push]);
+
+  // Show sign-in prompt for unauthenticated users
+  if (!isSignedIn) {
+    return (
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-lock text-blue-600 text-3xl"></i>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Sign In Required</h1>
+            <p className="text-gray-500 mb-6">Please sign in to view and manage your service requests.</p>
+            <Link to="/sign-in" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 inline-flex items-center gap-2">
+              <i className="fas fa-sign-in-alt"></i>
+              Sign In
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) return <RequestsSkeleton />;
 
@@ -24,19 +46,26 @@ export default function RequestsPage() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Requests</h1>
-        {isSignedIn ? (
-          <Link to="/requests/new" className="bg-blue-600 text-white px-4 py-2 rounded text-sm">
-            New Request
-          </Link>
-        ) : (
-          <Link to="/sign-in" className="text-sm text-blue-600 underline">
-            Sign in to create
-          </Link>
-        )}
+        <h1 className="text-2xl font-semibold">My Service Requests</h1>
+        <Link to="/requests/new" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2">
+          <i className="fas fa-plus-circle"></i>
+          Request Service
+        </Link>
       </div>
       {requests.length === 0 ? (
-        <p className="text-gray-500">No requests found.</p>
+        <div className="text-center py-12">
+          <div className="max-w-md mx-auto">
+            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-file-alt text-gray-400 text-3xl"></i>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No service requests yet</h3>
+            <p className="text-gray-500 mb-6">You haven't made any service requests. Start by requesting a service for your event.</p>
+            <Link to="/requests/new" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 inline-flex items-center gap-2">
+              <i className="fas fa-plus-circle"></i>
+              Request Your First Service
+            </Link>
+          </div>
+        </div>
       ) : (
         <table className="w-full border text-sm">
           <thead>

@@ -10,8 +10,14 @@ api.interceptors.response.use(
   err => {
     if (err?.response?.status === 401) {
       const current = window.location.pathname + window.location.search;
-      sessionStorage.setItem('postSignInRedirect', current);
-      navigate('/sign-in');
+      // Only redirect to sign-in if we're on a protected route
+      const protectedRoutes = ['/requests', '/approvals', '/invoices', '/payments'];
+      const isProtectedRoute = protectedRoutes.some(route => current.startsWith(route));
+      
+      if (isProtectedRoute) {
+        sessionStorage.setItem('postSignInRedirect', current);
+        navigate('/sign-in');
+      }
     }
     return Promise.reject(err);
   }

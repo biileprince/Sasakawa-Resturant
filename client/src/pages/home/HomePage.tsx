@@ -440,45 +440,57 @@ function Testimonials() {
 
 function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
   return (
-    <section className="bg-green-600 text-white py-16">
+    <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">
-          Ready to Get Started?
-        </h2>
-        <p className="text-xl text-green-100 max-w-2xl mx-auto mb-8">
-          Join university departments already using our streamlined catering request system
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {isSignedIn ? (
-            <>
-              <Link 
-                to="/requests/new"
-                className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-colors shadow-lg"
-              >
-                Submit Service Request
-              </Link>
-              <Link 
-                to="/requests"
-                className="bg-transparent hover:bg-white/10 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors border-2 border-white"
-              >
-                View My Requests
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link 
-                to="/sign-in"
-                className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 rounded-lg text-lg font-semibold transition-colors shadow-lg"
-              >
-                Sign In to Get Started
-              </Link>
-              <Link 
-                to="/services"
-                className="bg-transparent hover:bg-white/10 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-colors border-2 border-white"
-              >
-                Learn More
-              </Link>
-            </>
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Ready to Request Service?
+          </h2>
+          <p className="text-xl text-green-100 mb-10 leading-relaxed">
+            Join university departments already streamlining their catering needs. 
+            Quick approvals, transparent tracking, and exceptional service await.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+            {isSignedIn ? (
+              <>
+                <Link 
+                  to="/requests/new"
+                  className="group bg-white text-green-600 hover:bg-gray-50 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
+                >
+                  <i className="fas fa-paper-plane group-hover:translate-x-1 transition-transform duration-300"></i>
+                  Request Service Now
+                </Link>
+                <Link 
+                  to="/requests"
+                  className="group bg-transparent hover:bg-white/10 text-white px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 border-2 border-white hover:border-gray-200 flex items-center justify-center gap-3"
+                >
+                  <i className="fas fa-list-alt group-hover:scale-110 transition-transform duration-300"></i>
+                  View My Requests
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to="/requests/new"
+                  className="group bg-white text-green-600 hover:bg-gray-50 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
+                >
+                  <i className="fas fa-rocket group-hover:translate-y-1 transition-transform duration-300"></i>
+                  Request Service
+                </Link>
+                <Link 
+                  to="/services"
+                  className="group bg-transparent hover:bg-white/10 text-white px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 border-2 border-white hover:border-gray-200 flex items-center justify-center gap-3"
+                >
+                  <i className="fas fa-info-circle group-hover:scale-110 transition-transform duration-300"></i>
+                  Learn More
+                </Link>
+              </>
+            )}
+          </div>
+          {!isSignedIn && (
+            <p className="text-green-200 mt-6 text-sm">
+              You'll be asked to sign in when you click "Request Service"
+            </p>
           )}
         </div>
       </div>

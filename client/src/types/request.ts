@@ -10,6 +10,7 @@ export interface ServiceRequest {
   attendees: number;
   
   // Service Details
+  serviceType: string;
   description?: string;
   
   // Financial Information
@@ -48,6 +49,7 @@ export interface CreateServiceRequestInput {
   attendees: number;
   
   // Service Details
+  serviceType: string;
   description?: string;
   
   // Financial Information
@@ -70,6 +72,7 @@ export interface UpdateServiceRequestInput {
   venue?: string;
   estimateAmount?: number;
   attendees?: number;
+  serviceType?: string;
   description?: string;
   fundingSource?: string;
   contactPhone?: string;

@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && npm run seed",
+    "promote-user": "tsx src/utils/promote-user.ts",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {

@@ -4,9 +4,24 @@ import { z } from 'zod';
 
 const prisma = new PrismaClient();
 
-export const getRequests = async (_req: Request, res: Response) => {
+export const getRequests = async (req: Request, res: Response) => {
   try {
+    const user = (req as any).user; // From auth middleware
+    
+    let whereClause: any = {};
+    
+    // Role-based filtering
+    if (user) {
+      // If user is a regular REQUESTER, show only their own requests
+      if (user.role === 'REQUESTER') {
+        whereClause.requesterId = user.id;
+      }
+      // FINANCE_OFFICER and APPROVER can see all requests
+      // No additional filtering needed for these roles
+    }
+    
     const requests = await prisma.serviceRequest.findMany({
+      where: whereClause,
       include: {
         requester: { select: { id: true, name: true, email: true } },
         department: { select: { id: true, name: true, code: true } },
@@ -17,6 +32,7 @@ export const getRequests = async (_req: Request, res: Response) => {
     });
     res.json(requests);
   } catch (e) {
+    console.error('getRequests error', e);
     res.status(500).json({ message: 'Failed to fetch requests' });
   }
 };
@@ -42,6 +58,7 @@ export const createRequest = async (req: Request, res: Response) => {
       attendees: z.number().positive('Number of attendees must be positive'),
       
       // Service Details
+      serviceType: z.string().min(2, 'Service type is required'),
       description: z.string().optional(),
       
       // Financial Information
@@ -68,7 +85,7 @@ export const createRequest = async (req: Request, res: Response) => {
 
     const { 
       eventName, eventDate, venue, estimateAmount, attendees,
-      description, fundingSource, contactPhone,
+      serviceType, description, fundingSource, contactPhone,
       departmentId, departmentName, phone 
     } = parsed.data;
 
@@ -112,6 +129,7 @@ export const createRequest = async (req: Request, res: Response) => {
         venue,
         estimateAmount,
         attendees,
+        serviceType,
         description: description || '',
         fundingSource,
         contactPhone: contactPhone || '',
@@ -175,22 +193,28 @@ export const updateRequest = async (req: Request, res: Response) => {
     if (!user) return res.status(401).json({ message: 'Unauthorized' });
     const { id } = req.params;
     
+    console.log('updateRequest - received data:', JSON.stringify(req.body, null, 2));
+    
     const schema = z.object({
       eventName: z.string().min(3).optional(),
       eventDate: z.string().refine((date) => !isNaN(Date.parse(date)), 'Invalid event date').optional(),
       venue: z.string().min(2).optional(),
-      estimateAmount: z.number().positive().optional(),
+      estimateAmount: z.union([z.number(), z.string().transform((val) => parseFloat(val))]).refine((val) => val > 0, 'Estimate amount must be positive').optional(),
       attendees: z.number().positive().optional(),
+      serviceType: z.string().optional(),
       description: z.string().optional(),
       fundingSource: z.string().min(2).optional(),
-      contactPhone: z.string().min(7).optional(),
+      contactPhone: z.string().optional(),
       departmentId: z.string().uuid().optional(),
       status: z.enum(['DRAFT', 'SUBMITTED', 'APPROVED', 'NEEDS_REVISION', 'REJECTED', 'FULFILLED', 'CLOSED']).optional(),
       rejectionReason: z.string().optional(),
     });
 
     const parsed = schema.safeParse(req.body);
-    if (!parsed.success) return res.status(400).json({ message: 'Validation failed', issues: parsed.error.issues });
+    if (!parsed.success) {
+      console.log('updateRequest - validation failed:', parsed.error.issues);
+      return res.status(400).json({ message: 'Validation failed', issues: parsed.error.issues });
+    }
 
     const updateData = parsed.data;
     if (updateData.eventDate) {
@@ -274,7 +298,39 @@ async function transitionStatus(res: Response, id: string, newStatus: string, ap
     console.error('transitionStatus error', e);
     return res.status(500).json({ message: 'Failed to transition status' });
   }
-}
+};
+
+// Get requests that need approval (for approvers)
+export const getPendingApprovals = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+    if (!['APPROVER', 'FINANCE_OFFICER'].includes(user.role)) {
+      return res.status(403).json({ message: 'Forbidden - Insufficient permissions' });
+    }
+    
+    // Get requests that are in states requiring approval action
+    const requests = await prisma.serviceRequest.findMany({
+      where: {
+        status: {
+          in: ['SUBMITTED', 'NEEDS_REVISION']
+        }
+      },
+      include: {
+        requester: { select: { id: true, name: true, email: true } },
+        department: { select: { id: true, name: true, code: true } },
+        approver: { select: { id: true, name: true, email: true } },
+        attachments: true,
+      },
+      orderBy: { createdAt: 'asc' }, // Oldest first for fairness
+    });
+    
+    res.json(requests);
+  } catch (e) {
+    console.error('getPendingApprovals error', e);
+    res.status(500).json({ message: 'Failed to fetch pending approvals' });
+  }
+};
 
 export const approveRequest = async (req: Request, res: Response) => {
   const user = (req as any).user;
@@ -282,11 +338,12 @@ export const approveRequest = async (req: Request, res: Response) => {
   if (!['APPROVER', 'FINANCE_OFFICER'].includes(user.role)) return res.status(403).json({ message: 'Forbidden' });
   
   const { id } = req.params;
+  const { reason } = req.body; // Optional approval comments
   const existing = await prisma.serviceRequest.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ message: 'Not found' });
   if (!['SUBMITTED', 'NEEDS_REVISION'].includes(existing.status)) return res.status(409).json({ message: 'Cannot approve in current status' });
   
-  return transitionStatus(res, id, 'APPROVED', user.id);
+  return transitionStatus(res, id, 'APPROVED', user.id, reason);
 };
 
 export const rejectRequest = async (req: Request, res: Response) => {
@@ -310,11 +367,12 @@ export const requestRevision = async (req: Request, res: Response) => {
   if (!['APPROVER', 'FINANCE_OFFICER'].includes(user.role)) return res.status(403).json({ message: 'Forbidden' });
   
   const { id } = req.params;
+  const { revisionNotes } = req.body; // Optional revision notes
   const existing = await prisma.serviceRequest.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ message: 'Not found' });
   if (existing.status !== 'SUBMITTED') return res.status(409).json({ message: 'Only SUBMITTED can be moved to NEEDS_REVISION' });
   
-  return transitionStatus(res, id, 'NEEDS_REVISION', user.id);
+  return transitionStatus(res, id, 'NEEDS_REVISION', user.id, revisionNotes);
 };
 
 export const fulfillRequest = async (req: Request, res: Response) => {

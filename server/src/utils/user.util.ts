@@ -32,7 +32,12 @@ export async function ensureUserInDb(clerkUserId: string) {
   // 4. Attempt create; handle race (P2002) by re-query
   try {
     user = await prisma.user.create({
-      data: { clerkId: clerkUserId, email, name },
+      data: { 
+        clerkId: clerkUserId, 
+        email, 
+        name,
+        role: 'REQUESTER' // Default role for new users
+      },
     });
     return user;
   } catch (e: any) {

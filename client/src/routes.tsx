@@ -14,6 +14,7 @@ import InvoicesPage from './pages/protected/InvoicesPage';
 import PaymentsPage from './pages/protected/PaymentsPage';
 import InvoiceDetailPage from './pages/protected/InvoiceDetailPage';
 import PaymentDetailPage from './pages/protected/PaymentDetailPage';
+import UserManagementPage from './pages/protected/UserManagementPage';
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: 'requests/:id/edit', element: <AuthenticatedLayout><EditRequestPage /></AuthenticatedLayout> },
       { path: 'requests/new', element: <AuthenticatedLayout><CreateRequestPage /></AuthenticatedLayout> },
       { path: 'approvals', element: <AuthenticatedLayout><ApprovalsPage /></AuthenticatedLayout> },
+      { path: 'users', element: <AuthenticatedLayout><UserManagementPage /></AuthenticatedLayout> },
       { path: 'invoices', element: <AuthenticatedLayout><InvoicesPage /></AuthenticatedLayout> },
       { path: 'invoices/:id', element: <AuthenticatedLayout><InvoiceDetailPage /></AuthenticatedLayout> },
       { path: 'payments', element: <AuthenticatedLayout><PaymentsPage /></AuthenticatedLayout> },

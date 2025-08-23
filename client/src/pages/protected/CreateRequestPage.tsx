@@ -5,9 +5,11 @@ import { createRequest, getDepartments } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuthRequired } from '../../hooks/useAuthRequired';
 import type { CreateServiceRequestInput } from '../../types/request';
 
 export default function CreateRequestPage() {
+  useAuthRequired(); // Redirect to sign-in if not authenticated
   const navigate = useNavigate();
   const currentUser = useCurrentUser();
   const { push } = useToast();
@@ -19,6 +21,7 @@ export default function CreateRequestPage() {
     venue: '',
     estimateAmount: 0,
     attendees: 1,
+    serviceType: '',
     fundingSource: '',
     contactPhone: '',
     description: '',
@@ -50,8 +53,11 @@ export default function CreateRequestPage() {
     setSubmitting(true);
     try {
       if (!formData.departmentId && !formData.departmentName) throw new Error('Department required');
+      if (!formData.serviceType) throw new Error('Service type required');
+      if (!currentUser?.phone && !formData.phone) throw new Error('Personal phone number required');
       const created = await createRequest({
         ...formData,
+        contactPhone: formData.contactPhone || undefined,
         departmentId: formData.departmentId || undefined,
         departmentName: usingNewDept ? formData.departmentName : undefined,
         phone: (!currentUser?.phone && formData.phone) ? formData.phone : undefined,
@@ -137,6 +143,26 @@ export default function CreateRequestPage() {
 
               <div className="form-field">
                 <label className="form-label">
+                  Service Type *
+                </label>
+                <select 
+                  value={formData.serviceType} 
+                  onChange={e => setFormData({...formData, serviceType: e.target.value})} 
+                  required 
+                  className="form-select"
+                >
+                  <option value="">Select service type...</option>
+                  <option value="Breakfast Service">Breakfast Service</option>
+                  <option value="Lunch Service">Lunch Service</option>
+                  <option value="Dinner Service">Dinner Service</option>
+                  <option value="Special Events">Special Events</option>
+                  <option value="Corporate Meetings">Corporate Meetings</option>
+                  <option value="Academic Events">Academic Events</option>
+                </select>
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">
                   Number of Attendees *
                 </label>
                 <input 
@@ -148,6 +174,24 @@ export default function CreateRequestPage() {
                   className="form-input" 
                   placeholder="Expected number of attendees"
                 />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">
+                  Contact Phone
+                </label>
+                <input 
+                  type="tel" 
+                  value={formData.contactPhone || ''} 
+                  onChange={e => setFormData({...formData, contactPhone: e.target.value})} 
+                  className="form-input" 
+                  placeholder="Contact phone number for this event"
+                  pattern="[+]?[0-9\s\-\(\)]+"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  Optional phone number specific to this event for coordination
+                </p>
               </div>
             </div>
 
@@ -266,6 +310,37 @@ export default function CreateRequestPage() {
               </div>
             </div>
           </div>
+
+          {/* Personal Contact Information Section - Only show if user has no phone */}
+          {!currentUser?.phone && (
+            <div>
+              <div className="form-title">
+                <i className="fas fa-user mr-3 text-green-600"></i>
+                Personal Contact Information
+              </div>
+              
+              <div className="form-field">
+                <label className="form-label">
+                  Your Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  placeholder="Enter your phone number"
+                  value={formData.phone}
+                  onChange={e => {
+                    setFormData({...formData, phone: e.target.value});
+                  }}
+                  className="form-input"
+                  required={!currentUser?.phone}
+                  pattern="[+]?[0-9\s\-\(\)]+"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  <i className="fas fa-info-circle mr-1"></i>
+                  This will be saved to your profile for future requests
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Attachments Section */}
           <div>

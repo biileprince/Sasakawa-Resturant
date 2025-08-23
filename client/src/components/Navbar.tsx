@@ -11,24 +11,49 @@ interface NavItem {
   icon?: string; // FontAwesome icon class
 }
 
-const navItems: NavItem[] = [
-  { to: '/', label: 'Home', icon: 'fas fa-home' },
-  { to: '/services', label: 'Services', icon: 'fas fa-concierge-bell' },
-  { to: '/menu', label: 'Menu', icon: 'fas fa-utensils' },
-  { to: '/requests', label: 'My Requests', icon: 'fas fa-file-alt', authOnly: true },
-  { to: '/requests/new', label: 'New Request', icon: 'fas fa-plus-circle', authOnly: true },
-  { to: '/approvals', label: 'Approvals', icon: 'fas fa-check-circle', capability: 'canApproveRequests', authOnly: true },
-  { to: '/invoices', label: 'Invoices', icon: 'fas fa-file-invoice', capability: 'canCreateInvoice', authOnly: true },
-  { to: '/payments', label: 'Payments', icon: 'fas fa-credit-card', capability: 'canCreatePayment', authOnly: true },
-  { to: '/sign-in', label: 'Sign In', icon: 'fas fa-sign-in-alt' },
-];
+const getNavItems = (currentUser: any): NavItem[] => {
+  const baseItems: NavItem[] = [
+    { to: '/', label: 'Home', icon: 'fas fa-home' },
+    { to: '/services', label: 'Our Services', icon: 'fas fa-concierge-bell' },
+    { to: '/menu', label: 'Menu', icon: 'fas fa-utensils' },
+  ];
+
+  // Role-specific navigation
+  if (currentUser?.role === 'APPROVER' || currentUser?.role === 'FINANCE_OFFICER') {
+    // Approvers and Finance Officers see approval-focused navigation
+    baseItems.push(
+      { to: '/approvals', label: 'Approval Dashboard', icon: 'fas fa-tasks', authOnly: true },
+      { to: '/requests', label: 'Requests List', icon: 'fas fa-list-alt', authOnly: true }
+    );
+  } else {
+    // Regular users (REQUESTER) see request-focused navigation
+    baseItems.push(
+      { to: '/requests/new', label: 'Request Service', icon: 'fas fa-plus-circle' },
+      { to: '/requests', label: 'My Requests', icon: 'fas fa-file-alt', authOnly: true }
+    );
+  }
+
+  // Finance Officer specific items
+  if (currentUser?.role === 'FINANCE_OFFICER') {
+    baseItems.push(
+      { to: '/users', label: 'User Management', icon: 'fas fa-users-cog', authOnly: true },
+      { to: '/invoices', label: 'Invoices', icon: 'fas fa-file-invoice', authOnly: true },
+      { to: '/payments', label: 'Payments', icon: 'fas fa-credit-card', authOnly: true }
+    );
+  }
+
+  baseItems.push({ to: '/sign-in', label: 'Sign In', icon: 'fas fa-sign-in-alt' });
+  return baseItems;
+};
 
 export default function Navbar() {
   const { isSignedIn } = useUser();
   const currentUser = useCurrentUser();
   const [open, setOpen] = useState(false);
 
-  const filtered = navItems.filter(item => {
+  const navItems = getNavItems(currentUser);
+
+  const filtered = navItems.filter((item: NavItem) => {
     if (item.authOnly && !isSignedIn) return false;
     if (!isSignedIn && item.to === '/sign-in') return true; // show sign-in when logged out
     if (item.capability && !currentUser?.capabilities?.[item.capability]) return false;
@@ -59,7 +84,7 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-2">
-          {filtered.map(item => (
+          {filtered.map((item: NavItem) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -125,7 +150,7 @@ export default function Navbar() {
       {open && (
         <div className="lg:hidden border-t border-gray-100 bg-white/95 backdrop-blur-lg shadow-lg animate-fade-in">
           <div className="px-4 py-4 space-y-2 max-h-96 overflow-y-auto">
-            {filtered.map(item => (
+            {filtered.map((item: NavItem) => (
               <NavLink
                 key={item.to}
                 to={item.to}

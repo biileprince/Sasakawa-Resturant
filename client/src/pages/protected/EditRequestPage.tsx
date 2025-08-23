@@ -11,7 +11,7 @@ export default function EditRequestPage() {
   const navigate = useNavigate();
   const { push } = useToast();
   const queryClient = useQueryClient();
-  const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+  const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['request', id],
@@ -25,6 +25,7 @@ export default function EditRequestPage() {
     venue: '',
     estimateAmount: 0,
     attendees: 1,
+    serviceType: '',
     description: '',
     fundingSource: '',
     contactPhone: '',
@@ -32,12 +33,16 @@ export default function EditRequestPage() {
 
   useEffect(() => {
     if (data) {
+      // Convert ISO date to yyyy-MM-dd format for date input
+      const eventDate = data.eventDate ? new Date(data.eventDate).toISOString().split('T')[0] : '';
+      
       setFormData({
         eventName: data.eventName,
-        eventDate: data.eventDate,
+        eventDate: eventDate,
         venue: data.venue,
         estimateAmount: data.estimateAmount,
         attendees: data.attendees,
+        serviceType: data.serviceType || '',
         description: data.description,
         fundingSource: data.fundingSource,
         contactPhone: data.contactPhone,
@@ -58,7 +63,15 @@ export default function EditRequestPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate(formData);
+    
+    // Convert string numbers to actual numbers
+    const submitData = {
+      ...formData,
+      estimateAmount: Number(formData.estimateAmount),
+      attendees: Number(formData.attendees)
+    };
+    
+    mutation.mutate(submitData);
   };
   if (isLoading) return <div className="container mx-auto px-4 py-8"><div className="text-center">Loading...</div></div>;
   if (error) return <div className="container mx-auto px-4 py-8"><div className="text-center text-red-600">Failed to load request</div></div>;
@@ -171,6 +184,26 @@ export default function EditRequestPage() {
                   className="form-input" 
                   placeholder="Event location or venue name"
                 />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">
+                  Service Type *
+                </label>
+                <select 
+                  value={formData.serviceType || ''} 
+                  onChange={e => setFormData({...formData, serviceType: e.target.value})} 
+                  required 
+                  className="form-select"
+                >
+                  <option value="">Select service type...</option>
+                  <option value="Breakfast Service">Breakfast Service</option>
+                  <option value="Lunch Service">Lunch Service</option>
+                  <option value="Dinner Service">Dinner Service</option>
+                  <option value="Special Events">Special Events</option>
+                  <option value="Corporate Meetings">Corporate Meetings</option>
+                  <option value="Academic Events">Academic Events</option>
+                </select>
               </div>
 
               <div className="form-field">
