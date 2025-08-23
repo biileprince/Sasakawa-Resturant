@@ -1,0 +1,258 @@
+// Sasakawa Restaurant Service Request System - Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String           @id @default(uuid())
+  clerkId          String           @unique  // For Clerk authentication
+  email            String           @unique
+  name             String
+  role             Role
+  departmentId     String?
+  department       Department?      @relation(fields: [departmentId], references: [id])
+  phone            String?
+  status           UserStatus       @default(ACTIVE)
+  createdRequests  ServiceRequest[] @relation("requester")
+  approvedRequests ServiceRequest[] @relation("approver")
+  createdInvoices  Invoice[]        @relation("invoiceCreator")
+  createdPayments  Payment[]        @relation("paymentCreator")
+  uploadedAttachments Attachment[]  @relation("uploader")
+  auditLogs        AuditLog[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+enum Role {
+  FINANCE_OFFICER
+  APPROVER
+  REQUESTER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+model Department {
+  id            String           @id @default(uuid())
+  name          String
+  code          String           @unique
+  costCentre    String?
+  approverId    String?          // Default approver for the department
+  users         User[]
+  requests      ServiceRequest[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model ServiceRequest {
+  id                String               @id @default(uuid())
+  requestNo         String               @unique          // Auto-generated request number
+  
+  // Event Information
+  eventName         String
+  eventDate         DateTime
+  venue             String
+  estimateAmount    Decimal              @db.Decimal(10, 2)  // Estimate Amount in GHS
+  attendees         Int                  // Number of attendees
+  
+  // Service Details
+  description       String?              @db.Text
+  
+  // Financial Information
+  fundingSource     String
+  
+  // Contact Information
+  contactPhone      String?              // Optional contact phone
+  
+  // Status and Workflow
+  status            RequestStatus        @default(SUBMITTED)
+  rejectionReason   String?              @db.Text
+  approvalDate      DateTime?
+  
+  // Relationships
+  departmentId      String
+  department        Department           @relation(fields: [departmentId], references: [id])
+  requesterId       String
+  requester         User                 @relation("requester", fields: [requesterId], references: [id])
+  approverId        String?
+  approver          User?                @relation("approver", fields: [approverId], references: [id])
+  
+  // Related entities
+  attachments       Attachment[]
+  invoices          Invoice[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  NEEDS_REVISION
+  REJECTED
+  FULFILLED
+  CLOSED
+}
+
+model Invoice {
+  id             String            @id @default(uuid())
+  invoiceNo      String            @unique          // Auto-generated invoice number
+  requestId      String
+  request        ServiceRequest    @relation(fields: [requestId], references: [id])
+  
+  // Invoice Details
+  invoiceDate    DateTime
+  dueDate        DateTime
+  grossAmount    Decimal           @db.Decimal(10, 2)
+  taxAmount      Decimal           @db.Decimal(10, 2)
+  netAmount      Decimal           @db.Decimal(10, 2)
+  
+  // Status
+  status         InvoiceStatus     @default(SUBMITTED)
+  
+  // Relationships
+  createdById    String
+  createdBy      User              @relation("invoiceCreator", fields: [createdById], references: [id])
+  payments       Payment[]
+  attachments    Attachment[]
+  notifications  Notification[]
+  auditLogs      AuditLog[]
+  
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SUBMITTED
+  VERIFIED
+  APPROVED_FOR_PAYMENT
+  DISPUTED
+  PARTIALLY_PAID
+  PAID
+  CLOSED
+}
+
+model Payment {
+  id           String        @id @default(uuid())
+  paymentNo    String        @unique          // Auto-generated payment number
+  method       PaymentMethod
+  reference    String?                        // External reference number
+  paymentDate  DateTime
+  amount       Decimal       @db.Decimal(10, 2)
+  status       PaymentStatus @default(PROCESSED)
+  
+  // Relationships
+  invoiceId    String
+  invoice      Invoice       @relation(fields: [invoiceId], references: [id])
+  createdById  String
+  createdBy    User          @relation("paymentCreator", fields: [createdById], references: [id])
+  notifications Notification[]
+  auditLogs    AuditLog[]
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum PaymentMethod {
+  CHEQUE
+  TRANSFER
+  MOBILE_MONEY
+}
+
+enum PaymentStatus {
+  DRAFT
+  PROCESSED
+  CLEARED
+  CANCELLED
+  FAILED
+}
+
+model Attachment {
+  id            String          @id @default(uuid())
+  fileName      String
+  fileType      String
+  fileSize      Int
+  fileUrl       String
+  
+  // Relationships
+  uploadedById  String
+  uploadedBy    User            @relation("uploader", fields: [uploadedById], references: [id])
+  requestId     String?
+  request       ServiceRequest? @relation(fields: [requestId], references: [id])
+  invoiceId     String?
+  invoice       Invoice?        @relation(fields: [invoiceId], references: [id])
+  
+  uploadedAt    DateTime        @default(now())
+}
+
+model Notification {
+  id            String              @id @default(uuid())
+  type          NotificationType
+  title         String
+  message       String              @db.Text
+  isRead        Boolean             @default(false)
+  
+  // Email details
+  emailSent     Boolean             @default(false)
+  emailSentAt   DateTime?
+  recipientEmail String
+  
+  // Relationships
+  userId        String?             // Recipient user
+  requestId     String?
+  request       ServiceRequest?     @relation(fields: [requestId], references: [id])
+  invoiceId     String?
+  invoice       Invoice?            @relation(fields: [invoiceId], references: [id])
+  paymentId     String?
+  payment       Payment?            @relation(fields: [paymentId], references: [id])
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+enum NotificationType {
+  REQUEST_SUBMITTED
+  REQUEST_APPROVED
+  REQUEST_REJECTED
+  REQUEST_NEEDS_REVISION
+  INVOICE_CREATED
+  INVOICE_APPROVED
+  PAYMENT_RECORDED
+  PAYMENT_COMPLETED
+  GENERAL
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  action      String
+  details     String?   @db.Text
+  entityType  String    // "ServiceRequest", "Invoice", "Payment", etc.
+  entityId    String
+  ipAddress   String?
+  userAgent   String?
+  
+  // Optional relationships for easier querying
+  requestId   String?
+  request     ServiceRequest? @relation(fields: [requestId], references: [id])
+  invoiceId   String?
+  invoice     Invoice?        @relation(fields: [invoiceId], references: [id])
+  paymentId   String?
+  payment     Payment?        @relation(fields: [paymentId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+}
