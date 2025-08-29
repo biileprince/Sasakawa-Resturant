@@ -7,7 +7,7 @@ export default function MenuPage() {
     breakfast: {
       title: 'Breakfast Menu',
       icon: 'fas fa-coffee',
-      color: 'from-orange-500 to-yellow-500',
+      color: 'from-accent-yellow-500 to-accent-yellow-600',
       items: [
         {
           name: 'Continental Breakfast Platter',
@@ -43,7 +43,7 @@ export default function MenuPage() {
     lunch: {
       title: 'Lunch Menu',
       icon: 'fas fa-utensils',
-      color: 'from-green-500 to-teal-500',
+      color: 'from-accent-green-500 to-accent-green-600',
       items: [
         {
           name: 'Business Lunch Buffet',
@@ -76,6 +76,8 @@ export default function MenuPage() {
     },
     dinner: {
       title: 'Dinner Menu',
+      icon: 'fas fa-moon',
+      color: 'from-primary-500 to-primary-600',
       items: [
         {
           name: 'Formal Dinner Service',
@@ -142,16 +144,38 @@ export default function MenuPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Menu Showcase</h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Discover our diverse culinary offerings designed to make your university events memorable
-        </p>
-        <p className="text-sm text-gray-500 mt-2">
-          For pricing information, please contact us or submit a service request
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <section className="relative light-background py-20 lg:py-24 overflow-hidden">
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+        
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-white">
+            <div className="glass-hero max-w-4xl mx-auto">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-shadow-hero">
+                <span className="block">Our</span>
+                <span className="block text-white font-bold">
+                  Menu
+                </span>
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto font-light opacity-90 text-shadow-elegant">
+                Discover our diverse culinary offerings designed to make your university events memorable
+              </p>
+              <p className="text-lg mb-10 max-w-2xl mx-auto opacity-80 text-shadow-elegant">
+                From continental breakfast to elegant dinners, featuring both local Ghanaian dishes and international cuisine
+              </p>
+              
+              <div className="inline-flex items-center gap-2 glass-white rounded-full px-6 py-3">
+                <i className="fas fa-utensils text-accent-yellow-600"></i>
+                <span className="text-primary-700 font-medium">Operating Hours: 8:00 AM - 8:00 PM (Mon-Sat)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
       {/* Tab Navigation */}
       <div className="border-b border-gray-200 mb-8">
@@ -162,7 +186,7 @@ export default function MenuPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
-                  ? 'border-indigo-500 text-indigo-600'
+                  ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -193,7 +217,7 @@ export default function MenuPage() {
                     {item.dietary.map((diet, dietIndex) => (
                       <span
                         key={dietIndex}
-                        className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full"
+                        className="inline-block bg-accent-green-100 text-accent-green-800 text-xs px-2 py-1 rounded-full"
                       >
                         {diet}
                       </span>
@@ -211,8 +235,8 @@ export default function MenuPage() {
         <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">What Makes Our Menu Special</h3>
         <div className="grid md:grid-cols-3 gap-6">
           <div className="text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-accent-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <svg className="w-6 h-6 text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
             </div>
@@ -260,6 +284,7 @@ export default function MenuPage() {
             View Services
           </a>
         </div>
+      </div>
       </div>
     </div>
   );

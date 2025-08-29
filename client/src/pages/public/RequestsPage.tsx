@@ -25,12 +25,12 @@ export default function RequestsPage() {
       <div className="max-w-5xl mx-auto p-6">
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
-            <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i className="fas fa-lock text-blue-600 text-3xl"></i>
+            <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="fas fa-lock text-primary-600 text-3xl"></i>
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">Sign In Required</h1>
             <p className="text-gray-500 mb-6">Please sign in to view and manage your service requests.</p>
-            <Link to="/sign-in" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 inline-flex items-center gap-2">
+            <Link to="/sign-in" className="btn-primary px-6 py-3 rounded-lg font-medium transition-colors duration-200 inline-flex items-center gap-2">
               <i className="fas fa-sign-in-alt"></i>
               Sign In
             </Link>
@@ -48,7 +48,7 @@ export default function RequestsPage() {
     <div className="mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">My Service Requests</h1>
-        <Link to="/requests/new" className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2">
+        <Link to="/requests/new" className="btn-green btn-shimmer px-6 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
           <i className="fas fa-plus-circle"></i>
           Request Service
         </Link>
@@ -56,12 +56,12 @@ export default function RequestsPage() {
       {requests.length === 0 ? (
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-24 h-24 bg-neutral-light rounded-full flex items-center justify-center mx-auto mb-4">
               <i className="fas fa-file-alt text-gray-400 text-3xl"></i>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No service requests yet</h3>
             <p className="text-gray-500 mb-6">You haven't made any service requests. Start by requesting a service for your event.</p>
-            <Link to="/requests/new" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 inline-flex items-center gap-2">
+            <Link to="/requests/new" className="btn-green btn-shimmer px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2">
               <i className="fas fa-plus-circle"></i>
               Request Your First Service
             </Link>
@@ -89,7 +89,7 @@ export default function RequestsPage() {
                     <tr 
                       key={r.id} 
                       onClick={() => navigate(`/requests/${r.id}`)}
-                      className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                      className="hover:bg-primary-50 cursor-pointer transition-all duration-300 hover:shadow-md"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
@@ -128,7 +128,7 @@ export default function RequestsPage() {
               <div
                 key={r.id}
                 onClick={() => navigate(`/requests/${r.id}`)}
-                className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow duration-200"
+                className="glass-card p-4 cursor-pointer hover:shadow-lg transition-all duration-300 hover:transform hover:scale-[1.02] border border-primary-100"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
@@ -232,9 +232,11 @@ function StatusBadge({ status }: { status: string }) {
   };
 
   return (
-    <span className={getStatusClass(status)}>
-      <i className={`${getStatusIcon(status)} mr-1`}></i>
-      {getStatusText(status)}
-    </span>
+    <div className="status-wrapper">
+      <span className={getStatusClass(status)}>
+        <i className={`${getStatusIcon(status)} mr-1`}></i>
+        {getStatusText(status)}
+      </span>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { updateRequest } from '../../services/request.service';
+import { updateRequest, uploadRequestAttachment } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import type { ServiceRequest, UpdateServiceRequestInput } from '../../types/request';
 
@@ -31,6 +31,12 @@ export default function EditRequestPage() {
     contactPhone: '',
   });
 
+  // File upload state
+  const [files, setFiles] = useState<File[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     if (data) {
       // Convert ISO date to yyyy-MM-dd format for date input
@@ -49,6 +55,127 @@ export default function EditRequestPage() {
       });
     }
   }, [data]);
+
+  // File handling functions
+  const handleFileSelect = (selectedFiles: FileList | File[]) => {
+    const fileArray = Array.from(selectedFiles);
+    
+    // Validate files
+    const validFiles = fileArray.filter(file => {
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        push(`File "${file.name}" is too large. Maximum size is 10MB.`, 'error');
+        return false;
+      }
+      
+      // Check file type
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/plain'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        push(`File "${file.name}" has an unsupported format.`, 'error');
+        return false;
+      }
+      
+      return true;
+    });
+    
+    setFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev + 1);
+    setIsDragOver(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev - 1);
+    if (dragCounter <= 1) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    setDragCounter(0);
+    
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    handleFileSelect(droppedFiles);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (fileName: string, fileType: string) => {
+    if (fileType.startsWith('image/')) return 'fas fa-image text-green-500';
+    if (fileType === 'application/pdf') return 'fas fa-file-pdf text-red-500';
+    if (fileType.includes('word')) return 'fas fa-file-word text-blue-500';
+    if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fas fa-file-excel text-green-600';
+    if (fileType.includes('text')) return 'fas fa-file-alt text-gray-500';
+    
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch(ext) {
+      case 'pdf': return 'fas fa-file-pdf text-red-500';
+      case 'doc':
+      case 'docx': return 'fas fa-file-word text-blue-500';
+      case 'xls':
+      case 'xlsx': return 'fas fa-file-excel text-green-600';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif': return 'fas fa-image text-green-500';
+      case 'txt': return 'fas fa-file-alt text-gray-500';
+      default: return 'fas fa-file text-gray-400';
+    }
+  };
+
+  const uploadFiles = async () => {
+    if (files.length === 0 || !id) return;
+    
+    setUploading(true);
+    try {
+      await Promise.all(
+        files.map(file => uploadRequestAttachment(id, file))
+      );
+      push(`${files.length} file(s) uploaded successfully`, 'success');
+      setFiles([]); // Clear files after successful upload
+      queryClient.invalidateQueries({ queryKey: ['request', id] });
+    } catch (error) {
+      console.error('File upload error:', error);
+      push('Some files failed to upload', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const mutation = useMutation({
     mutationFn: (payload: UpdateServiceRequestInput) => updateRequest(id!, payload),
@@ -134,7 +261,7 @@ export default function EditRequestPage() {
       </div>
 
       {/* Form Container */}
-      <div className="form-container">
+      <div className="form-container-compact">
         <form onSubmit={handleSubmit} className="space-y-8">
           
           {/* Event Information Section */}
@@ -302,44 +429,109 @@ export default function EditRequestPage() {
           <div>
             <div className="form-title">
               <i className="fas fa-paperclip mr-3 text-blue-600"></i>
-              Attachments (Optional)
+              Upload Additional Attachments (Optional)
             </div>
             
-            <div className="file-upload">
+            {/* Drag and Drop Area */}
+            <div
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
+                isDragOver 
+                  ? 'border-primary-400 bg-primary-50 scale-[1.02]' 
+                  : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+              }`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <input 
                 type="file" 
                 id="edit-attachments"
                 multiple 
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt"
                 className="hidden" 
                 onChange={(e) => {
-                  // Handle file upload here
-                  const files = Array.from(e.target.files || []);
-                  console.log('Selected files:', files);
+                  if (e.target.files) {
+                    handleFileSelect(e.target.files);
+                  }
                 }}
               />
               <label htmlFor="edit-attachments" className="cursor-pointer block">
                 <div className="text-center">
-                  <i className="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                  <i className={`fas fa-cloud-upload-alt text-4xl mb-4 transition-colors ${
+                    isDragOver ? 'text-primary-500' : 'text-gray-400'
+                  }`}></i>
                   <div className="text-lg font-medium text-gray-700 mb-2">
-                    Click to upload additional files
+                    {isDragOver ? (
+                      <span className="text-primary-600 font-semibold">Drop files here to upload</span>
+                    ) : (
+                      'Click to upload additional files or drag and drop'
+                    )}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 mb-4">
                     PDF, DOC, DOCX, XLS, XLSX, PNG, JPG up to 10MB each
                   </div>
-                  <div className="mt-4">
-                    <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                      <i className="fas fa-plus mr-2"></i>
-                      Add Files
-                    </span>
-                  </div>
+                  {!isDragOver && (
+                    <div className="mt-4">
+                      <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <i className="fas fa-plus mr-2"></i>
+                        Add Files
+                      </span>
+                    </div>
+                  )}
                 </div>
               </label>
             </div>
+
+            {/* Selected Files List */}
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-medium text-gray-700">New Files to Upload ({files.length}):</h4>
+                  <button
+                    type="button"
+                    onClick={uploadFiles}
+                    disabled={uploading}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                  >
+                    {uploading ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin mr-1"></i>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-upload mr-1"></i>
+                        Upload All
+                      </>
+                    )}
+                  </button>
+                </div>
+                {files.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <i className={`${getFileIcon(file.name, file.type)} text-xl`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                        <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="text-red-600 hover:text-red-800 p-1"
+                      disabled={uploading}
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             
             <div className="mt-3 text-sm text-gray-600">
               <i className="fas fa-info-circle mr-1 text-blue-500"></i>
-              Upload any additional documents or replace existing ones.
+              Upload any additional documents. Existing attachments are managed in the request detail view.
             </div>
           </div>
 

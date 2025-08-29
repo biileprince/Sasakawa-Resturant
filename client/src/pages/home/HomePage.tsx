@@ -20,78 +20,80 @@ export default function HomePage() {
 
 function Hero({ isSignedIn }: { isSignedIn: boolean }) {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gray-900">
-      {/* Simplified background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900"></div>
+    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden main-background">
+      {/* Dark overlay for better text readability */}
+      <div className="absolute inset-0 bg-black bg-opacity-40"></div>
       
       {/* Subtle animated background elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-20 w-32 h-32 bg-white/5 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-32 right-32 w-40 h-40 bg-green-500/10 rounded-full blur-2xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute bottom-32 right-32 w-40 h-40 bg-accent-yellow-500/10 rounded-full blur-2xl animate-pulse float-animation" style={{animationDelay: '2s'}}></div>
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
         <div className="text-center">
-          <div className="animate-fade-in-up">
-            <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight text-white">
-              <span className="block">Sasakawa</span>
-              <span className="block text-green-400">
-                Restaurant
-              </span>
-            </h1>
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-6 py-2 mb-8 border border-white/20">
-              <i className="fas fa-sparkles text-yellow-300"></i>
-              <span className="text-green-100 font-medium">Service Request System</span>
+          <div className="glass-hero-lg max-w-5xl mx-auto">
+            <div className="animate-fade-in-up">
+              <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight text-white text-shadow-hero">
+                <span className="block">Sasakawa</span>
+                <span className="block text-white font-bold">
+                  Restaurant
+                </span>
+              </h1>
+              <div className="inline-flex items-center gap-2 glass-white rounded-full px-6 py-2 mb-8">
+                <i className="fas fa-sparkles text-accent-yellow-600"></i>
+                <span className="text-primary-700 font-medium">Professional Catering & Item 13 Services</span>
+              </div>
             </div>
-          </div>
-          
-          <div className="animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-            <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto mb-12 leading-relaxed font-light">
-              Transform your university catering experience with our streamlined request system. 
-              Submit requests, track approvals, and manage transactions for all your campus dining events.
-            </p>
-          </div>
-          
-          <div className="animate-fade-in-up flex flex-col sm:flex-row gap-6 justify-center" style={{animationDelay: '0.4s'}}>
-            <Link 
-              to="/services" 
-              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-gray-900 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-            >
-              <i className="fas fa-concierge-bell mr-3 group-hover:scale-110 transition-transform duration-300"></i>
-              Explore Our Services
-            </Link>
-            {isSignedIn ? (
+            
+            <div className="animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+              <p className="text-xl md:text-2xl text-gray-100 max-w-4xl mx-auto mb-12 leading-relaxed font-light text-shadow-elegant">
+                Experience exceptional dining with our diverse menu of local and continental dishes. 
+                Streamlined request system for departments, associations, and university events.
+              </p>
+            </div>
+            
+            <div className="animate-fade-in-up flex flex-col sm:flex-row gap-6 justify-center" style={{animationDelay: '0.4s'}}>
               <Link 
-                to="/requests/new" 
-                className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                to="/services" 
+                className="btn-yellow group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl shadow-yellow hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <i className="fas fa-plus-circle mr-3 group-hover:rotate-90 transition-transform duration-300"></i>
-                Submit New Request
+                <i className="fas fa-concierge-bell mr-3 group-hover:scale-110 transition-transform duration-300"></i>
+                Explore Our Services
               </Link>
-            ) : (
-              <Link 
-                to="/sign-in" 
-                className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              >
-                <i className="fas fa-sign-in-alt mr-3 group-hover:translate-x-1 transition-transform duration-300"></i>
-                Get Started
-              </Link>
-            )}
+              {isSignedIn ? (
+                <Link 
+                  to="/requests/new" 
+                  className="btn-green group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl shadow-green hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <i className="fas fa-plus-circle mr-3 group-hover:rotate-90 transition-transform duration-300"></i>
+                  Submit New Request
+                </Link>
+              ) : (
+                <Link 
+                  to="/sign-in" 
+                  className="btn-primary group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold rounded-xl shadow-primary hover:shadow-xl transition-all duration-300 hover:scale-105"
+                >
+                  <i className="fas fa-sign-in-alt mr-3 group-hover:translate-x-1 transition-transform duration-300"></i>
+                  Get Started
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Stats */}
           <div className="animate-fade-in-up mt-20 grid grid-cols-1 md:grid-cols-3 gap-8" style={{animationDelay: '0.6s'}}>
             <div className="text-center bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10">
               <div className="text-4xl font-bold text-white mb-2">500+</div>
-              <div className="text-green-200">Events Served</div>
+              <div className="text-accent-yellow-200">Events Served</div>
             </div>
             <div className="text-center bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10">
-              <div className="text-4xl font-bold text-white mb-2">24/7</div>
-              <div className="text-green-200">Support Available</div>
+              <div className="text-4xl font-bold text-white mb-2">12hrs</div>
+              <div className="text-accent-yellow-200">Daily Service (8AM-8PM)</div>
             </div>
             <div className="text-center bg-white/5 backdrop-blur-sm rounded-lg p-6 border border-white/10">
               <div className="text-4xl font-bold text-white mb-2">98%</div>
-              <div className="text-green-200">Satisfaction Rate</div>
+              <div className="text-accent-yellow-200">Satisfaction Rate</div>
             </div>
           </div>
         </div>
@@ -111,7 +113,7 @@ function ServiceHighlights() {
     },
     {
       icon: 'fas fa-utensils',
-      iconBg: 'from-green-400 to-green-600',
+  iconBg: 'from-accent-green-400 to-accent-green-600',
       title: 'Lunch & Dinner',
       description: 'Professional catering for meetings, conferences, and formal university functions.',
       features: ['Buffet service', 'Plated meals', 'Dietary options']
@@ -136,13 +138,13 @@ function ServiceHighlights() {
     <section className="bg-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 scroll-reveal">
-          <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 bg-accent-green-100 text-accent-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
             <i className="fas fa-star"></i>
             Professional Catering Services
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Excellence in Every
-            <span className="text-green-600"> Event</span>
+            <span className="text-primary-600"> Event</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Comprehensive catering solutions designed specifically for university events and academic gatherings
@@ -159,7 +161,7 @@ function ServiceHighlights() {
               <div className={`w-16 h-16 bg-gradient-to-br ${service.iconBg} rounded-2xl flex items-center justify-center text-white text-xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                 <i className={service.icon}></i>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors duration-300">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors duration-300">
                 {service.title}
               </h3>
               <p className="text-gray-600 mb-4 leading-relaxed">
@@ -168,7 +170,7 @@ function ServiceHighlights() {
               <ul className="space-y-2">
                 {service.features.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-sm text-gray-500">
-                    <i className="fas fa-check-circle text-green-500 text-xs"></i>
+                    <i className="fas fa-check-circle service-check-primary text-xs"></i>
                     {feature}
                   </li>
                 ))}
@@ -195,7 +197,7 @@ function HowItWorks() {
       icon: 'fas fa-check-circle',
       title: 'Department Approval',
       description: 'Department heads review and approve requests before they proceed to catering.',
-      color: 'from-green-500 to-green-600'
+  color: 'from-accent-green-500 to-accent-green-600'
     },
     {
       step: '03',
@@ -223,7 +225,7 @@ function HowItWorks() {
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             How It
-            <span className="text-green-600"> Works</span>
+            <span className="text-primary-600"> Works</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Our streamlined process ensures smooth service delivery from initial request to final payment
@@ -262,7 +264,7 @@ function HowItWorks() {
         <div className="text-center mt-16 scroll-reveal" style={{animationDelay: '0.8s'}}>
           <Link 
             to="/services" 
-            className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             <i className="fas fa-arrow-right"></i>
             Start Your Request
@@ -309,7 +311,7 @@ function FeaturedMenuItems() {
           </p>
           <Link 
             to="/menu" 
-            className="inline-block text-green-600 hover:text-green-700 font-semibold text-lg"
+            className="inline-block text-primary-600 hover:text-primary-700 font-semibold text-lg"
           >
             View Full Menu →
           </Link>
@@ -366,7 +368,7 @@ function QuickActions({ current }: { current: any }) {
   if (actions.length === 0) return null;
 
   return (
-    <section className="bg-blue-50 py-16">
+    <section className="bg-primary-50 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Quick Actions</h2>
@@ -440,13 +442,13 @@ function Testimonials() {
 
 function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
   return (
-    <section className="bg-gradient-to-r from-green-600 to-green-700 text-white py-20">
+    <section className="bg-primary-600 text-white py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Ready to Request Service?
           </h2>
-          <p className="text-xl text-green-100 mb-10 leading-relaxed">
+          <p className="text-xl text-primary-100 mb-10 leading-relaxed">
             Join university departments already streamlining their catering needs. 
             Quick approvals, transparent tracking, and exceptional service await.
           </p>
@@ -455,7 +457,7 @@ function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
               <>
                 <Link 
                   to="/requests/new"
-                  className="group bg-white text-green-600 hover:bg-gray-50 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
+                  className="group bg-accent-yellow-500 hover:bg-accent-yellow-600 text-primary-900 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <i className="fas fa-paper-plane group-hover:translate-x-1 transition-transform duration-300"></i>
                   Request Service Now
@@ -472,7 +474,7 @@ function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
               <>
                 <Link 
                   to="/requests/new"
-                  className="group bg-white text-green-600 hover:bg-gray-50 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
+                  className="group bg-accent-yellow-500 hover:bg-accent-yellow-600 text-primary-900 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <i className="fas fa-rocket group-hover:translate-y-1 transition-transform duration-300"></i>
                   Request Service
@@ -488,7 +490,7 @@ function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
             )}
           </div>
           {!isSignedIn && (
-            <p className="text-green-200 mt-6 text-sm">
+            <p className="text-primary-200 mt-6 text-sm">
               You'll be asked to sign in when you click "Request Service"
             </p>
           )}

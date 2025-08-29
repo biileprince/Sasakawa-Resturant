@@ -14,7 +14,10 @@ import InvoicesPage from './pages/protected/InvoicesPage';
 import PaymentsPage from './pages/protected/PaymentsPage';
 import InvoiceDetailPage from './pages/protected/InvoiceDetailPage';
 import PaymentDetailPage from './pages/protected/PaymentDetailPage';
+import EditInvoicePage from './pages/protected/EditInvoicePage';
+import EditPaymentPage from './pages/protected/EditPaymentPage';
 import UserManagementPage from './pages/protected/UserManagementPage';
+import FinanceDashboard from './pages/protected/FinanceDashboard';
 
 const router = createBrowserRouter([
   {
@@ -29,11 +32,14 @@ const router = createBrowserRouter([
       { path: 'requests/:id/edit', element: <AuthenticatedLayout><EditRequestPage /></AuthenticatedLayout> },
       { path: 'requests/new', element: <AuthenticatedLayout><CreateRequestPage /></AuthenticatedLayout> },
       { path: 'approvals', element: <AuthenticatedLayout><ApprovalsPage /></AuthenticatedLayout> },
+      { path: 'finance', element: <AuthenticatedLayout><FinanceDashboard /></AuthenticatedLayout> },
       { path: 'users', element: <AuthenticatedLayout><UserManagementPage /></AuthenticatedLayout> },
       { path: 'invoices', element: <AuthenticatedLayout><InvoicesPage /></AuthenticatedLayout> },
       { path: 'invoices/:id', element: <AuthenticatedLayout><InvoiceDetailPage /></AuthenticatedLayout> },
+      { path: 'invoices/:id/edit', element: <AuthenticatedLayout><EditInvoicePage /></AuthenticatedLayout> },
       { path: 'payments', element: <AuthenticatedLayout><PaymentsPage /></AuthenticatedLayout> },
       { path: 'payments/:id', element: <AuthenticatedLayout><PaymentDetailPage /></AuthenticatedLayout> },
+      { path: 'payments/:id/edit', element: <AuthenticatedLayout><EditPaymentPage /></AuthenticatedLayout> },
       { path: 'sign-in', element: <SignInPage /> },
     ],
   },

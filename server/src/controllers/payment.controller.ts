@@ -26,6 +26,7 @@ export const getPayments = async (_req: Request, res: Response) => {
           },
         },
         createdBy: { select: { id: true, name: true, email: true } },
+        attachments: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -68,8 +69,8 @@ export const createPayment = async (req: Request, res: Response) => {
     if (!invoice) {
       return res.status(404).json({ message: 'Invoice not found' });
     }
-    if (!['APPROVED_FOR_PAYMENT', 'PARTIALLY_PAID'].includes(invoice.status)) {
-      return res.status(400).json({ message: 'Invoice must be approved for payment' });
+    if (!['SUBMITTED', 'VERIFIED', 'APPROVED_FOR_PAYMENT', 'PARTIALLY_PAID'].includes(invoice.status)) {
+      return res.status(400).json({ message: 'Invoice must be submitted or approved for payment' });
     }
 
     // Calculate total paid amount
@@ -160,6 +161,7 @@ export const getPaymentById = async (req: Request, res: Response) => {
           },
         },
         createdBy: { select: { id: true, name: true, email: true } },
+        attachments: true,
       },
     });
     

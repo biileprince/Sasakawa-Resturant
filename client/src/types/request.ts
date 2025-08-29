@@ -127,6 +127,7 @@ export interface Payment {
   status: PaymentStatus;
   invoiceId: string;
   createdById: string;
+  attachments?: Attachment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -149,6 +150,7 @@ export interface Attachment {
   uploadedById: string;
   requestId?: string;
   invoiceId?: string;
+  paymentId?: string;
   uploadedAt: string;
 }
 

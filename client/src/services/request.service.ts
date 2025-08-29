@@ -154,6 +154,15 @@ export async function uploadInvoiceAttachment(invoiceId: string, file: File) {
   return res.data;
 }
 
+export async function uploadPaymentAttachment(paymentId: string, file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await api.post(`/payments/${paymentId}/attachments`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
 // Legacy exports for backward compatibility
 export { getRequests as getRequestRecords };
 export type { RequestRecord, CreateRequestInput };

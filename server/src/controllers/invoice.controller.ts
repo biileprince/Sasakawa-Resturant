@@ -56,13 +56,13 @@ export const createInvoice = async (req: Request, res: Response) => {
 
     const { requestId, invoiceDate, dueDate, grossAmount, taxAmount, netAmount } = parsed.data;
 
-    // Verify the request exists and is approved
+    // Verify the request exists and is approved or fulfilled
     const request = await prisma.serviceRequest.findUnique({ where: { id: requestId } });
     if (!request) {
       return res.status(404).json({ message: 'Service request not found' });
     }
-    if (request.status !== 'APPROVED') {
-      return res.status(400).json({ message: 'Can only create invoices for approved requests' });
+    if (!['APPROVED', 'FULFILLED'].includes(request.status)) {
+      return res.status(400).json({ message: 'Can only create invoices for approved or fulfilled requests' });
     }
 
     const invoice = await prisma.invoice.create({

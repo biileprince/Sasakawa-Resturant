@@ -8,8 +8,8 @@ import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import * as requestController from '../controllers/request.controller.js';
-import { createInvoice, getInvoices, getInvoiceById } from '../controllers/invoice.controller.js';
-import { createPayment, getPayments, getPaymentById } from '../controllers/payment.controller.js';
+import { createInvoice, getInvoices, getInvoiceById, updateInvoice, approveInvoiceForPayment } from '../controllers/invoice.controller.js';
+import { createPayment, getPayments, getPaymentById, updatePayment } from '../controllers/payment.controller.js';
 import { getDepartments } from '../controllers/department.controller.js';
 import { getAllUsers, updateUserRole } from '../controllers/user.controller.js';
 
@@ -48,7 +48,14 @@ router.post('/requests/:id/attachments', authenticateRequest, loadCurrentUser, u
 		if (!found) return res.status(404).json({ message: 'Request not found' });
 		const file = req.file;
 		if (!file) return res.status(400).json({ message: 'No file uploaded' });
-		const attachment = await prisma.attachment.create({ data: { fileName: file.originalname, url: `/uploads/${file.filename}`, uploadedById: user.id, requestId: id } });
+		const attachment = await prisma.attachment.create({ data: { 
+			fileName: file.originalname, 
+			fileType: file.mimetype || 'application/octet-stream',
+			fileSize: file.size,
+			fileUrl: `/uploads/${file.filename}`, 
+			uploadedById: user.id, 
+			requestId: id 
+		} });
 		res.status(201).json(attachment);
 	} catch (e) {
 		console.error('upload attachment error', e);
@@ -60,11 +67,64 @@ router.post('/requests/:id/attachments', authenticateRequest, loadCurrentUser, u
 router.get('/invoices', optionalAuthentication, getInvoices);
 router.get('/invoices/:id', optionalAuthentication, getInvoiceById);
 router.post('/invoices', authenticateRequest, loadCurrentUser, createInvoice);
+router.put('/invoices/:id', authenticateRequest, loadCurrentUser, updateInvoice);
+router.post('/invoices/:id/approve', authenticateRequest, loadCurrentUser, approveInvoiceForPayment);
+router.post('/invoices/:id/attachments', authenticateRequest, loadCurrentUser, upload.single('file'), async (req: any, res) => {
+	try {
+		const user = req.user;
+		if (!user) return res.status(401).json({ message: 'Unauthorized' });
+		const { id } = req.params;
+		const found = await prisma.invoice.findUnique({ where: { id } });
+		if (!found) return res.status(404).json({ message: 'Invoice not found' });
+		const file = req.file;
+		if (!file) return res.status(400).json({ message: 'No file uploaded' });
+		const attachment = await prisma.attachment.create({ 
+			data: { 
+				fileName: file.originalname, 
+				fileType: file.mimetype || 'application/octet-stream',
+				fileSize: file.size,
+				fileUrl: `/uploads/${file.filename}`, 
+				uploadedById: user.id, 
+				invoiceId: id 
+			} 
+		});
+		res.status(201).json(attachment);
+	} catch (e) {
+		console.error('upload invoice attachment error', e);
+		res.status(500).json({ message: 'Failed to upload attachment' });
+	}
+});
 
 // Payments
 router.get('/payments', authenticateRequest, loadCurrentUser, getPayments);
 router.get('/payments/:id', authenticateRequest, loadCurrentUser, getPaymentById);
 router.post('/payments', authenticateRequest, loadCurrentUser, createPayment);
+router.put('/payments/:id', authenticateRequest, loadCurrentUser, updatePayment);
+router.post('/payments/:id/attachments', authenticateRequest, loadCurrentUser, upload.single('file'), async (req: any, res) => {
+	try {
+		const user = req.user;
+		if (!user) return res.status(401).json({ message: 'Unauthorized' });
+		const { id } = req.params;
+		const found = await prisma.payment.findUnique({ where: { id } });
+		if (!found) return res.status(404).json({ message: 'Payment not found' });
+		const file = req.file;
+		if (!file) return res.status(400).json({ message: 'No file uploaded' });
+		const attachment = await prisma.attachment.create({ 
+			data: { 
+				fileName: file.originalname, 
+				fileType: file.mimetype || 'application/octet-stream',
+				fileSize: file.size,
+				fileUrl: `/uploads/${file.filename}`, 
+				uploadedById: user.id, 
+				paymentId: id 
+			} 
+		});
+		res.status(201).json(attachment);
+	} catch (e) {
+		console.error('upload payment attachment error', e);
+		res.status(500).json({ message: 'Failed to upload attachment' });
+	}
+});
 
 // User management (Finance Officer only)
 router.get('/users', authenticateRequest, loadCurrentUser, getAllUsers);

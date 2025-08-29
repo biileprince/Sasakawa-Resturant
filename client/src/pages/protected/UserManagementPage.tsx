@@ -91,7 +91,7 @@ export default function UserManagementPage() {
         <div className="bg-white rounded-lg shadow p-6 border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                 </svg>
@@ -110,7 +110,7 @@ export default function UserManagementPage() {
           <div className="flex items-center">
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -127,7 +127,7 @@ export default function UserManagementPage() {
         <div className="bg-white rounded-lg shadow p-6 border">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
                 <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
@@ -145,10 +145,12 @@ export default function UserManagementPage() {
 
       {/* Users Table */}
       <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+        <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">All Users</h3>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -181,10 +183,10 @@ export default function UserManagementPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       user.role === 'FINANCE_OFFICER' 
-                        ? 'bg-purple-100 text-purple-800'
+                        ? 'bg-yellow-100 text-yellow-800'
                         : user.role === 'APPROVER'
                         ? 'bg-green-100 text-green-800'
-                        : 'bg-blue-100 text-blue-800'
+                        : 'bg-primary-100 text-primary-800'
                     }`}>
                       {user.role.replace('_', ' ')}
                     </span>
@@ -210,6 +212,69 @@ export default function UserManagementPage() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden">
+          {users?.length === 0 ? (
+            <div className="px-6 py-12 text-center text-gray-500">
+              <div className="flex flex-col items-center">
+                <i className="fas fa-users text-4xl text-gray-300 mb-4"></i>
+                <p className="text-lg font-medium">No users found</p>
+                <p className="text-sm">Users will appear here once they join the system.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3 p-4">
+              {users?.map((user) => (
+                <div key={user.id} className="glass-card p-4 border border-primary-100">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">{user.name}</h3>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    </div>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      user.role === 'FINANCE_OFFICER' 
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : user.role === 'APPROVER'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-primary-100 text-primary-800'
+                    }`}>
+                      {user.role.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 mb-1">Department</p>
+                      <p className="text-gray-900">{user.department?.name || 'Not assigned'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-500 mb-1">Joined</p>
+                      <p className="text-gray-900">{new Date(user.createdAt).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-end">
+                      <button
+                        onClick={() => {
+                          setSelectedUserId(user.id);
+                          setSelectedRole(user.role);
+                        }}
+                        className="text-blue-600 hover:text-blue-900 text-sm font-medium"
+                      >
+                        Change Role
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -247,7 +312,7 @@ export default function UserManagementPage() {
               <button
                 onClick={handleRoleUpdate}
                 disabled={updateRoleMutation.isPending}
-                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="btn-primary flex-1 text-sm disabled:opacity-50"
               >
                 {updateRoleMutation.isPending ? 'Updating...' : 'Update Role'}
               </button>

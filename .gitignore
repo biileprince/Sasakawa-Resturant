@@ -67,3 +67,5 @@ prisma/migrations/dev.db*
 *.tmp
 *.temp
 college-finance-monitor_Version3.html
+USER_CREATION_GUIDE.md
+index.css.backup

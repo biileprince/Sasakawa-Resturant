@@ -32,9 +32,9 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, request,
         return {
           title: 'Approve Request',
           buttonText: 'Approve Request',
-          buttonColor: 'bg-green-600 hover:bg-green-700',
+          buttonColor: 'btn-green',
           icon: (
-            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
             </svg>
           )
@@ -515,7 +515,7 @@ export default function ApprovalsPage() {
                     <button
                       onClick={() => openModal(request, 'approve')}
                       disabled={approveMutation.isPending}
-                      className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="btn-green flex-1 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {approveMutation.isPending ? (
                         <>

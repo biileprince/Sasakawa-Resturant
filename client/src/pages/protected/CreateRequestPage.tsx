@@ -1,7 +1,7 @@
 //client/src/pages/protected/CreateRequestPage.tsx
 
 import { useState, useEffect } from 'react';
-import { createRequest, getDepartments } from '../../services/request.service';
+import { createRequest, getDepartments, uploadRequestAttachment } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useNavigate } from 'react-router-dom';
@@ -33,6 +33,9 @@ export default function CreateRequestPage() {
   const [error, setError] = useState<string | null>(null);
   const [departments, setDepartments] = useState<{ id: string; name: string; code: string }[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
 
   const usingNewDept = !formData.departmentId && (formData.departmentName?.length || 0) > 0;
 
@@ -47,6 +50,108 @@ export default function CreateRequestPage() {
     })();
   }, []);
 
+  // File handling functions
+  const handleFileSelect = (selectedFiles: FileList | File[]) => {
+    const fileArray = Array.from(selectedFiles);
+    
+    // Validate files
+    const validFiles = fileArray.filter(file => {
+      // Check file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        push(`File "${file.name}" is too large. Maximum size is 10MB.`, 'error');
+        return false;
+      }
+      
+      // Check file type
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/plain'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        push(`File "${file.name}" has an unsupported format.`, 'error');
+        return false;
+      }
+      
+      return true;
+    });
+    
+    setFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev + 1);
+    setIsDragOver(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(prev => prev - 1);
+    if (dragCounter <= 1) {
+      setIsDragOver(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    setDragCounter(0);
+    
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    handleFileSelect(droppedFiles);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (fileName: string, fileType: string) => {
+    if (fileType.startsWith('image/')) return 'fas fa-image text-green-500';
+    if (fileType === 'application/pdf') return 'fas fa-file-pdf text-red-500';
+    if (fileType.includes('word')) return 'fas fa-file-word text-blue-500';
+    if (fileType.includes('excel') || fileType.includes('spreadsheet')) return 'fas fa-file-excel text-green-600';
+    if (fileType.includes('text')) return 'fas fa-file-alt text-gray-500';
+    
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    switch(ext) {
+      case 'pdf': return 'fas fa-file-pdf text-red-500';
+      case 'doc':
+      case 'docx': return 'fas fa-file-word text-blue-500';
+      case 'xls':
+      case 'xlsx': return 'fas fa-file-excel text-green-600';
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif': return 'fas fa-image text-green-500';
+      case 'txt': return 'fas fa-file-alt text-gray-500';
+      default: return 'fas fa-file text-gray-400';
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -55,6 +160,8 @@ export default function CreateRequestPage() {
       if (!formData.departmentId && !formData.departmentName) throw new Error('Department required');
       if (!formData.serviceType) throw new Error('Service type required');
       if (!currentUser?.phone && !formData.phone) throw new Error('Personal phone number required');
+      
+      // Create the request first
       const created = await createRequest({
         ...formData,
         contactPhone: formData.contactPhone || undefined,
@@ -62,40 +169,56 @@ export default function CreateRequestPage() {
         departmentName: usingNewDept ? formData.departmentName : undefined,
         phone: (!currentUser?.phone && formData.phone) ? formData.phone : undefined,
       });
-  push('Request created', 'success');
-  navigate(`/requests/${created.id}`);
+
+      // Upload files if any
+      if (files.length > 0) {
+        try {
+          await Promise.all(
+            files.map(file => uploadRequestAttachment(created.id, file))
+          );
+          push(`Request created with ${files.length} file(s) uploaded`, 'success');
+        } catch (uploadError) {
+          console.error('File upload error:', uploadError);
+          push('Request created but some files failed to upload', 'error');
+        }
+      } else {
+        push('Request created', 'success');
+      }
+      
+      navigate(`/requests/${created.id}`);
     } catch (err: any) {
-  const msg = err?.response?.data?.message || 'Failed to create request';
-  setError(msg);
-  push(msg, 'error');
+      const msg = err?.response?.data?.message || 'Failed to create request';
+      setError(msg);
+      push(msg, 'error');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-            <i className="fas fa-plus text-green-600 text-xl"></i>
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create Service Request</h1>
-            <p className="text-gray-600">Submit a new service request for catering services</p>
+    <div className="min-h-screen section-background">
+      <div className="container mx-auto px-4 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex items-center justify-center w-12 h-12 bg-primary-100 rounded-lg">
+              <i className="fas fa-plus text-primary-600 text-xl"></i>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Create Service Request</h1>
+              <p className="text-gray-200">Submit a new service request for catering services</p>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Form Container */}
-      <div className="form-container">
-        <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="form-container-compact">
+        <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Event Information Section */}
-          <div>
-            <div className="form-title">
-              <i className="fas fa-calendar-alt mr-3 text-green-600"></i>
+          <div className="form-section">
+            <div className="form-section-title">
+              <i className="fas fa-calendar-alt mr-3 text-primary-600"></i>
               Event Information
             </div>
             
@@ -210,9 +333,9 @@ export default function CreateRequestPage() {
           </div>
 
           {/* Financial Information Section */}
-          <div>
-            <div className="form-title">
-              <i className="fas fa-dollar-sign mr-3 text-green-600"></i>
+          <div className="form-section">
+            <div className="form-section-title">
+              <i className="fas fa-dollar-sign mr-3 text-primary-600"></i>
               Financial Information
             </div>
             
@@ -259,9 +382,9 @@ export default function CreateRequestPage() {
           </div>
 
           {/* Department Information Section */}
-          <div>
-            <div className="form-title">
-              <i className="fas fa-building mr-3 text-green-600"></i>
+          <div className="form-section">
+            <div className="form-section-title">
+              <i className="fas fa-building mr-3 text-primary-600"></i>
               Department Information
             </div>
             
@@ -313,9 +436,9 @@ export default function CreateRequestPage() {
 
           {/* Personal Contact Information Section - Only show if user has no phone */}
           {!currentUser?.phone && (
-            <div>
-              <div className="form-title">
-                <i className="fas fa-user mr-3 text-green-600"></i>
+            <div className="form-section">
+              <div className="form-section-title">
+                <i className="fas fa-user mr-3 text-primary-600"></i>
                 Personal Contact Information
               </div>
               
@@ -343,43 +466,87 @@ export default function CreateRequestPage() {
           )}
 
           {/* Attachments Section */}
-          <div>
-            <div className="form-title">
-              <i className="fas fa-paperclip mr-3 text-green-600"></i>
+          <div className="form-section">
+            <div className="form-section-title">
+              <i className="fas fa-paperclip mr-3 text-primary-600"></i>
               Attachments (Optional)
             </div>
             
-            <div className="file-upload">
+            {/* Drag and Drop Area */}
+            <div
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200 ${
+                isDragOver 
+                  ? 'border-primary-400 bg-primary-50 scale-[1.02]' 
+                  : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+              }`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <input 
                 type="file" 
                 id="attachments"
                 multiple 
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.txt"
                 className="hidden" 
                 onChange={(e) => {
-                  // Handle file upload here
-                  const files = Array.from(e.target.files || []);
-                  console.log('Selected files:', files);
+                  if (e.target.files) {
+                    handleFileSelect(e.target.files);
+                  }
                 }}
               />
               <label htmlFor="attachments" className="cursor-pointer block">
                 <div className="text-center">
-                  <i className="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                  <i className={`fas fa-cloud-upload-alt text-4xl mb-4 transition-colors ${
+                    isDragOver ? 'text-primary-500' : 'text-gray-400'
+                  }`}></i>
                   <div className="text-lg font-medium text-gray-700 mb-2">
-                    Click to upload files or drag and drop
+                    {isDragOver ? (
+                      <span className="text-primary-600 font-semibold">Drop files here to upload</span>
+                    ) : (
+                      'Click to upload files or drag and drop'
+                    )}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 mb-4">
                     PDF, DOC, DOCX, XLS, XLSX, PNG, JPG up to 10MB each
                   </div>
-                  <div className="mt-4">
-                    <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                      <i className="fas fa-plus mr-2"></i>
-                      Choose Files
-                    </span>
-                  </div>
+                  {!isDragOver && (
+                    <div className="mt-4">
+                      <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        <i className="fas fa-plus mr-2"></i>
+                        Choose Files
+                      </span>
+                    </div>
+                  )}
                 </div>
               </label>
             </div>
+
+            {/* Selected Files List */}
+            {files.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <h4 className="text-sm font-medium text-gray-700">Selected Files ({files.length}):</h4>
+                {files.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <i className={`${getFileIcon(file.name, file.type)} text-xl`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                        <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="text-red-600 hover:text-red-800 p-1"
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             
             <div className="mt-3 text-sm text-gray-600">
               <i className="fas fa-info-circle mr-1 text-blue-500"></i>
@@ -389,20 +556,20 @@ export default function CreateRequestPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-accent-red-50 border border-accent-red-200 rounded-lg p-4">
               <div className="flex items-center">
-                <i className="fas fa-exclamation-triangle text-red-500 mr-2"></i>
-                <span className="text-red-700">{error}</span>
+                <i className="fas fa-exclamation-triangle text-accent-red-600 mr-2"></i>
+                <span className="text-accent-red-700">{error}</span>
               </div>
             </div>
           )}
 
           {/* Form Actions */}
-          <div className="form-actions">
+          <div className="form-submit-section">
             <button 
               type="button" 
               onClick={() => navigate(-1)} 
-              className="btn btn-secondary"
+              className="btn-yellow"
             >
               <i className="fas fa-times mr-2"></i>
               Cancel
@@ -410,7 +577,7 @@ export default function CreateRequestPage() {
             <button 
               type="submit" 
               disabled={submitting} 
-              className="btn btn-primary"
+              className="btn-primary btn-shimmer"
             >
               {submitting ? (
                 <>
@@ -427,6 +594,7 @@ export default function CreateRequestPage() {
           </div>
 
         </form>
+      </div>
       </div>
     </div>
   );

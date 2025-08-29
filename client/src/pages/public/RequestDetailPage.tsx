@@ -4,6 +4,7 @@ import axios from 'axios';
 import { approveRequest, rejectRequest, requestRevision, fulfillRequest, uploadRequestAttachment } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
+import AttachmentViewer from '../../components/AttachmentViewer';
 
 export default function RequestDetailPage() {
   const { id } = useParams();
@@ -47,7 +48,7 @@ export default function RequestDetailPage() {
   const canFulfill = user?.capabilities?.canCreatePayment && data.status === 'APPROVED';
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-6 sm:py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
         <Link to="/" className="link link-internal hover:text-green-600 transition-colors">
@@ -60,15 +61,15 @@ export default function RequestDetailPage() {
       </nav>
 
       {/* Header Section */}
-      <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
         <div className="flex items-start justify-between flex-wrap gap-4">
-          <div className="flex-1 min-w-[300px]">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-                <i className="fas fa-utensils text-green-600 text-xl"></i>
+              <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg">
+                <i className="fas fa-utensils text-green-600 text-lg sm:text-xl"></i>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{data.eventName}</h1>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{data.eventName}</h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StatusBadge status={data.status} />
                   <span className="text-sm text-gray-500">Request #{data.requestNo || data.id.slice(0,8)}</span>
@@ -76,7 +77,7 @@ export default function RequestDetailPage() {
               </div>
             </div>
             
-            <div className="flex items-center gap-4 text-sm text-gray-600 mt-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-600 mt-3">
               <div className="flex items-center gap-1">
                 <i className="fas fa-user text-gray-400"></i>
                 <span>{data.requester?.name || 'Unknown'}</span>
@@ -95,64 +96,85 @@ export default function RequestDetailPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap w-full sm:w-auto">
             {canEdit && (
-              <Link to={`/requests/${id}/edit`} className="btn btn-outline link-edit">
-                <i className="fas fa-edit mr-2"></i>
-                Edit Request
+              <Link to={`/requests/${id}/edit`} className="btn-action btn-action-edit flex-1 sm:flex-none">
+                <i className="fas fa-edit"></i>
+                <span className="hidden sm:inline">Edit Request</span>
+                <span className="sm:hidden">Edit</span>
               </Link>
             )}
             {canApprove && (
-              <div className="flex gap-2">
-                <ActionBtn 
-                  label="Approve" 
-                  onClick={()=>approveMut.mutate()} 
-                  loading={approveMut.isPending} 
-                  color="green" 
-                  icon="fas fa-check"
-                />
-                <ActionBtn 
-                  label="Reject" 
-                  onClick={()=>rejectMut.mutate()} 
-                  loading={rejectMut.isPending} 
-                  color="red" 
-                  icon="fas fa-times"
-                />
+              <div className="flex gap-2 flex-wrap flex-1 sm:flex-none">
+                <button 
+                  disabled={approveMut.isPending} 
+                  onClick={() => approveMut.mutate()} 
+                  className="btn-action btn-action-approve flex-1 sm:flex-none"
+                >
+                  {approveMut.isPending ? (
+                    <i className="fas fa-spinner fa-spin"></i>
+                  ) : (
+                    <i className="fas fa-check"></i>
+                  )}
+                  {approveMut.isPending ? 'Processing...' : 'Approve'}
+                </button>
+                <button 
+                  disabled={rejectMut.isPending} 
+                  onClick={() => rejectMut.mutate()} 
+                  className="btn-action btn-action-reject"
+                >
+                  {rejectMut.isPending ? (
+                    <i className="fas fa-spinner fa-spin"></i>
+                  ) : (
+                    <i className="fas fa-times"></i>
+                  )}
+                  {rejectMut.isPending ? 'Processing...' : 'Reject'}
+                </button>
                 {data.status === 'SUBMITTED' && (
-                  <ActionBtn 
-                    label="Request Revision" 
-                    onClick={()=>revisionMut.mutate()} 
-                    loading={revisionMut.isPending} 
-                    color="amber" 
-                    icon="fas fa-edit"
-                  />
+                  <button 
+                    disabled={revisionMut.isPending} 
+                    onClick={() => revisionMut.mutate()} 
+                    className="btn-action btn-action-revision"
+                  >
+                    {revisionMut.isPending ? (
+                      <i className="fas fa-spinner fa-spin"></i>
+                    ) : (
+                      <i className="fas fa-edit"></i>
+                    )}
+                    {revisionMut.isPending ? 'Processing...' : 'Request Revision'}
+                  </button>
                 )}
               </div>
             )}
             {canFulfill && (
-              <ActionBtn 
-                label="Mark as Fulfilled" 
-                onClick={()=>fulfillMut.mutate()} 
-                loading={fulfillMut.isPending} 
-                color="purple" 
-                icon="fas fa-check-circle"
-              />
+              <button 
+                disabled={fulfillMut.isPending} 
+                onClick={() => fulfillMut.mutate()} 
+                className="btn-action btn-action-fulfill"
+              >
+                {fulfillMut.isPending ? (
+                  <i className="fas fa-spinner fa-spin"></i>
+                ) : (
+                  <i className="fas fa-check-circle"></i>
+                )}
+                {fulfillMut.isPending ? 'Processing...' : 'Mark as Fulfilled'}
+              </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Event Information */}
           <div className="dashboard-card">
             <div className="flex items-center gap-3 mb-6">
               <i className="fas fa-calendar-alt text-green-600 text-xl"></i>
-              <h2 className="text-xl font-semibold text-gray-900">Event Information</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Event Information</h2>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <DetailItem 
                 icon="fas fa-calendar" 
                 label="Event Date" 
@@ -214,7 +236,8 @@ export default function RequestDetailPage() {
                 <h2 className="text-xl font-semibold text-gray-900">Related Invoices</h2>
               </div>
               
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
@@ -246,12 +269,42 @@ export default function RequestDetailPage() {
                   </tbody>
                 </table>
               </div>
-              
-              <div className="mt-4 text-right">
-                <Link to="/invoices" className="link link-internal font-medium text-sm">
-                  View all invoices
-                </Link>
+
+              {/* Mobile Card View */}
+              <div className="lg:hidden space-y-3">
+                {data.invoices.map((inv: any) => (
+                  <div key={inv.id} className="glass-card p-4 border border-primary-100">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <Link to={`/invoices/${inv.id}`} className="link link-internal font-medium text-sm">
+                          #{inv.invoiceNo || inv.id.slice(0,8)}
+                        </Link>
+                      </div>
+                      <StatusBadge status={inv.status} />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 mb-1">Amount</p>
+                        <p className="text-gray-900 font-medium">₵{inv.netAmount ? Number(inv.netAmount).toFixed(2) : '0.00'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-gray-500 mb-1">Due Date</p>
+                        <p className="text-gray-900">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
+              
+              {/* Hide "View all invoices" button for approvers */}
+              {user?.role !== 'APPROVER' && (
+                <div className="mt-4 text-right">
+                  <Link to="/invoices" className="link link-internal font-medium text-sm">
+                    View all invoices
+                  </Link>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -274,58 +327,19 @@ export default function RequestDetailPage() {
               )}
             </div>
           </div>
-
-          {/* Attachments */}
-          <div className="dashboard-card">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-900">Attachments</h3>
-              {canEdit && (
-                <label className="btn btn-sm btn-outline cursor-pointer">
-                  <i className="fas fa-plus mr-1"></i>
-                  Add
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    onChange={e => { 
-                      const f = e.target.files?.[0]; 
-                      if (f) uploadMut.mutate(f); 
-                    }} 
-                  />
-                </label>
-              )}
-            </div>
-            
-            {uploadMut.isPending && (
-              <div className="text-sm text-gray-500 mb-2">
-                <i className="fas fa-spinner fa-spin mr-2"></i>
-                Uploading...
-              </div>
-            )}
-            
-            {data.attachments?.length > 0 ? (
-              <div className="space-y-2">
-                {data.attachments.map((a: any) => (
-                  <div key={a.id} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
-                    <i className="fas fa-file text-gray-400"></i>
-                    <a 
-                      href={a.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="link link-external text-sm font-medium flex-1 truncate"
-                    >
-                      {a.fileName}
-                    </a>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <i className="fas fa-file text-2xl mb-2"></i>
-                <p className="text-sm">No attachments</p>
-              </div>
-            )}
-          </div>
         </div>
+      </div>
+
+      {/* Supporting Documents - Full Width Section */}
+      <div className="mt-8">
+        <AttachmentViewer
+          attachments={data.attachments || []}
+          entityId={data.id}
+          entityType="request"
+          canUpload={canEdit}
+          uploadFunction={uploadRequestAttachment}
+          queryKey={['request', id]}
+        />
       </div>
     </div>
   );
@@ -371,37 +385,6 @@ function Stat({ label, value }: { label: string; value: any }) {
       <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
       <div className="font-medium">{String(value)}</div>
     </div>
-  );
-}
-
-function ActionBtn({ label, onClick, loading, color, icon }: { 
-  label: string; 
-  onClick: ()=>void; 
-  loading: boolean; 
-  color: string;
-  icon?: string;
-}) {
-  const colorMap: any = {
-    green: 'btn-primary bg-green-600 hover:bg-green-700',
-    red: 'btn-danger',
-    amber: 'btn-secondary bg-amber-500 hover:bg-amber-600 text-white border-amber-500',
-    purple: 'btn-secondary bg-purple-600 hover:bg-purple-700 text-white border-purple-600',
-    blue: 'btn-primary'
-  };
-  
-  return (
-    <button 
-      disabled={loading} 
-      onClick={onClick} 
-      className={`btn ${colorMap[color] || 'btn-secondary'}`}
-    >
-      {loading ? (
-        <i className="fas fa-spinner fa-spin mr-2"></i>
-      ) : (
-        icon && <i className={`${icon} mr-2`}></i>
-      )}
-      {loading ? 'Processing...' : label}
-    </button>
   );
 }
 
@@ -454,10 +437,12 @@ function StatusBadge({ status }: { status: string }) {
   };
 
   return (
-    <span className={getStatusClass(status)}>
-      <i className={`${getStatusIcon(status)} mr-1`}></i>
-      {getStatusText(status)}
-    </span>
+    <div className="status-wrapper">
+      <span className={getStatusClass(status)}>
+        <i className={`${getStatusIcon(status)} mr-1`}></i>
+        {getStatusText(status)}
+      </span>
+    </div>
   );
 }
 

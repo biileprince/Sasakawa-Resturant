@@ -160,6 +160,7 @@ model Payment {
   invoice      Invoice       @relation(fields: [invoiceId], references: [id])
   createdById  String
   createdBy    User          @relation("paymentCreator", fields: [createdById], references: [id])
+  attachments  Attachment[]
   notifications Notification[]
   auditLogs    AuditLog[]
   
@@ -195,6 +196,8 @@ model Attachment {
   request       ServiceRequest? @relation(fields: [requestId], references: [id])
   invoiceId     String?
   invoice       Invoice?        @relation(fields: [invoiceId], references: [id])
+  paymentId     String?
+  payment       Payment?        @relation(fields: [paymentId], references: [id])
   
   uploadedAt    DateTime        @default(now())
 }
