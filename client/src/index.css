@@ -22,8 +22,8 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(ellipse at center, rgba(30, 37, 97, 0.3) 0%, rgba(30, 37, 97, 0.7) 100%),
-    linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(30, 37, 97, 0.8));
+    radial-gradient(ellipse at center, rgba(30, 37, 97, 0.2) 0%, rgba(30, 37, 97, 0.4) 100%),
+    linear-gradient(135deg, rgba(0, 0, 0, 0.6), rgba(30, 37, 97, 0.5));
   backdrop-filter: blur(3px);
   z-index: 1;
 }
@@ -313,7 +313,7 @@
 
 /* Button Styles */
 .btn-primary {
-  background: linear-gradient(135deg, #226843, #1a5233);
+  background: linear-gradient(135deg, #226843de, #1a5233d5);
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;

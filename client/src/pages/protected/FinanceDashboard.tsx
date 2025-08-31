@@ -79,6 +79,10 @@ export default function FinanceDashboard() {
     totalPayments: payments?.length || 0,
     totalUsers: users?.length || 0,
     totalRevenue: payments?.reduce((sum: number, payment: any) => {
+      // Exclude cancelled payments from revenue calculation
+      if (payment.status === 'CANCELLED') {
+        return sum;
+      }
       const amount = Number(payment.amount || 0);
       return sum + amount;
     }, 0) || 0

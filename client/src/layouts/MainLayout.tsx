@@ -8,7 +8,7 @@ export default function MainLayout() {
       <main className="flex-1 pb-16">
         <Outlet />
       </main>
-      <footer className="relative bg-gradient-to-r from-primary-600 to-primary-700 text-white py-12">
+      <footer className="relative bg-gradient-to-r from-primary-500 to-primary-600 text-white py-12">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">

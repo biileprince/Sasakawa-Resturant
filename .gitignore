@@ -72,3 +72,11 @@ index.css.backup
 EMAIL_SETUP_GUIDE.md
 FIXES_SUMMARY.md
 DEPLOYMENT_CHECKLIST.md
+
+server/scripts
+PRODUCTION_DEPLOYMENT_GUIDE.md
+.env.production
+client\env.example
+server/env.example
+.gitignore
+

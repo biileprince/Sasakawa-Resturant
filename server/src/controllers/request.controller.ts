@@ -500,3 +500,75 @@ export const fulfillRequest = async (req: Request, res: Response) => {
   
   return transitionStatus(res, id, 'FULFILLED', user.id);
 };
+
+export const deleteRequest = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+    
+    const { id } = req.params;
+
+    const request = await prisma.serviceRequest.findUnique({
+      where: { id },
+      include: {
+        invoices: true,
+        attachments: true,
+      },
+    });
+
+    if (!request) {
+      return res.status(404).json({ message: 'Service request not found' });
+    }
+
+    // Authorization: Only requesters can delete their own rejected requests, or finance officers can delete any rejected request
+    if (user.role === 'REQUESTER' && request.requesterId !== user.id) {
+      return res.status(403).json({ message: 'You can only delete your own requests' });
+    } else if (!['REQUESTER', 'FINANCE_OFFICER'].includes(user.role)) {
+      return res.status(403).json({ message: 'Only requesters and finance officers can delete requests' });
+    }
+
+    // Only allow deletion of rejected requests
+    if (request.status !== 'REJECTED') {
+      return res.status(400).json({ message: 'Only rejected requests can be deleted' });
+    }
+
+    // Cannot delete if there are invoices associated
+    if (request.invoices && request.invoices.length > 0) {
+      return res.status(400).json({ message: 'Cannot delete request with associated invoices' });
+    }
+
+    // Delete associated attachments and notifications first
+    await prisma.attachment.deleteMany({
+      where: { requestId: id },
+    });
+
+    await prisma.notification.deleteMany({
+      where: { requestId: id },
+    });
+
+    await prisma.auditLog.deleteMany({
+      where: { entityId: id, entityType: 'ServiceRequest' },
+    });
+
+    // Delete the request
+    await prisma.serviceRequest.delete({
+      where: { id },
+    });
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        action: 'DELETE_REQUEST',
+        details: `Deleted rejected request ${request.requestNo}`,
+        entityType: 'ServiceRequest',
+        entityId: request.id,
+      },
+    });
+
+    res.json({ message: 'Request deleted successfully' });
+  } catch (e) {
+    console.error('deleteRequest error', e);
+    res.status(500).json({ message: 'Failed to delete request' });
+  }
+};

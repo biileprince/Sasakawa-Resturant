@@ -1,18 +1,32 @@
 import { useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../../contexts/ToastContext';
-import { getRequests } from '../../services/request.service';
+import { getRequests, deleteRequest } from '../../services/request.service';
 import { Link } from 'react-router-dom';
 import { navigate } from '../../utils/navigate';
 
 export default function RequestsPage() {
   const { isSignedIn } = useUser();
   const { push } = useToast();
+  const qc = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: ['requests'],
     queryFn: getRequests,
     enabled: isSignedIn, // Only fetch when user is signed in
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: deleteRequest,
+    onSuccess: () => {
+      push('Request deleted successfully', 'success');
+      qc.invalidateQueries({ queryKey: ['requests'] });
+    },
+    onError: (error: any) => {
+      console.error('Request deletion error:', error);
+      const message = error?.response?.data?.message || 'Failed to delete request';
+      push(message, 'error');
+    },
   });
 
   useEffect(() => {
@@ -83,6 +97,7 @@ export default function RequestsPage() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount (GHS)</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -120,6 +135,30 @@ export default function RequestsPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <StatusBadge status={r.status} />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex space-x-2 justify-end">
+                          <Link
+                            to={`/requests/${r.id}`}
+                            className="text-primary-600 hover:text-primary-900"
+                          >
+                            View
+                          </Link>
+                          {r.status === 'REJECTED' && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm('Are you sure you want to delete this rejected request? This action cannot be undone.')) {
+                                  deleteMut.mutate(r.id);
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-900"
+                              disabled={deleteMut.isPending}
+                            >
+                              {deleteMut.isPending ? 'Deleting...' : 'Delete'}
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -171,18 +210,34 @@ export default function RequestsPage() {
                   </div>
                 </div>
 
-                {/* Department */}
+                {/* Department and Actions */}
                 <div className="mt-3 pt-3 border-t border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-xs font-medium text-gray-500">Department</p>
                       <p className="text-sm text-gray-900">{r.department?.name || '-'}</p>
                     </div>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                      View Details
+                    <div className="flex items-center space-x-3">
+                      {r.status === 'REJECTED' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Are you sure you want to delete this rejected request? This action cannot be undone.')) {
+                              deleteMut.mutate(r.id);
+                            }
+                          }}
+                          className="text-red-600 hover:text-red-900 text-xs font-medium"
+                          disabled={deleteMut.isPending}
+                        >
+                          {deleteMut.isPending ? 'Deleting...' : 'Delete'}
+                        </button>
+                      )}
+                      <div className="flex items-center text-xs text-gray-500">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                        View Details
+                      </div>
                     </div>
                   </div>
                 </div>

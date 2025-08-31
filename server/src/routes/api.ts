@@ -8,8 +8,8 @@ import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import * as requestController from '../controllers/request.controller.js';
-import { createInvoice, getInvoices, getInvoiceById, updateInvoice, approveInvoiceForPayment } from '../controllers/invoice.controller.js';
-import { createPayment, getPayments, getPaymentById, updatePayment } from '../controllers/payment.controller.js';
+import { createInvoice, getInvoices, getInvoiceById, updateInvoice, approveInvoiceForPayment, exportInvoices } from '../controllers/invoice.controller.js';
+import { createPayment, getPayments, getPaymentById, updatePayment, deletePayment, exportPayments } from '../controllers/payment.controller.js';
 import { getDepartments } from '../controllers/department.controller.js';
 import { getAllUsers, updateUserRole } from '../controllers/user.controller.js';
 import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '../controllers/notification.controller.js';
@@ -65,6 +65,7 @@ router.post('/requests/:id/approve', authenticateRequest, loadCurrentUser, reque
 router.post('/requests/:id/reject', authenticateRequest, loadCurrentUser, requestController.rejectRequest);
 router.post('/requests/:id/revision', authenticateRequest, loadCurrentUser, requestController.requestRevision);
 router.post('/requests/:id/fulfill', authenticateRequest, loadCurrentUser, requestController.fulfillRequest);
+router.delete('/requests/:id', authenticateRequest, loadCurrentUser, requestController.deleteRequest);
 router.post('/requests/:id/attachments', authenticateRequest, loadCurrentUser, upload.single('file'), async (req: any, res) => {
 	try {
 		const user = req.user;
@@ -111,6 +112,7 @@ router.get('/invoices/:id', optionalAuthentication, getInvoiceById);
 router.post('/invoices', authenticateRequest, loadCurrentUser, createInvoice);
 router.put('/invoices/:id', authenticateRequest, loadCurrentUser, updateInvoice);
 router.post('/invoices/:id/approve', authenticateRequest, loadCurrentUser, approveInvoiceForPayment);
+router.get('/invoices/export/excel', authenticateRequest, loadCurrentUser, exportInvoices);
 router.post('/invoices/:id/attachments', authenticateRequest, loadCurrentUser, upload.single('file'), async (req: any, res) => {
 	try {
 		const user = req.user;
@@ -142,6 +144,8 @@ router.get('/payments', authenticateRequest, loadCurrentUser, getPayments);
 router.get('/payments/:id', authenticateRequest, loadCurrentUser, getPaymentById);
 router.post('/payments', authenticateRequest, loadCurrentUser, createPayment);
 router.put('/payments/:id', authenticateRequest, loadCurrentUser, updatePayment);
+router.delete('/payments/:id', authenticateRequest, loadCurrentUser, deletePayment);
+router.get('/payments/export/excel', authenticateRequest, loadCurrentUser, exportPayments);
 router.post('/payments/:id/attachments', authenticateRequest, loadCurrentUser, upload.single('file'), async (req: any, res) => {
 	try {
 		const user = req.user;

@@ -100,9 +100,9 @@ export const emailTemplates = {
           ` : ''}
           
           <div style="text-align: center; margin: 20px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/requests/${requestData.id}" 
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/approvals" 
                style="background: #667eea; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-               View Request Details
+               View Approvals Dashboard
             </a>
           </div>
         </div>
@@ -157,9 +157,9 @@ export const emailTemplates = {
           </div>
           
           <div style="text-align: center; margin: 20px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/requests/${requestData.id}" 
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/requests" 
                style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-               View Request Status
+               View My Requests
             </a>
           </div>
         </div>
@@ -214,9 +214,9 @@ export const emailTemplates = {
           </div>
           
           <div style="text-align: center; margin: 20px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/requests/${requestData.id}/edit" 
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/requests" 
                style="background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-               Edit Request
+               Edit My Request
             </a>
           </div>
         </div>
@@ -414,13 +414,13 @@ export const emailTemplates = {
           </div>
           
           <div style="text-align: center; margin: 20px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/requests/${requestData.id}" 
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/finance" 
                style="background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px;">
-               View Request
+               Finance Dashboard
             </a>
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/invoices/new?requestId=${requestData.id}" 
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/invoices" 
                style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-               Create Invoice
+               Manage Invoices
             </a>
           </div>
         </div>

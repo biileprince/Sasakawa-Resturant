@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { getPayments, createPayment, getInvoices } from '../../services/request.service';
+import { getPayments, createPayment, deletePayment, getInvoices, exportPaymentsExcel } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { Link } from 'react-router-dom';
+import ExportModal from '../../components/ExportModal';
 
 export default function PaymentsPage() {
   const { push } = useToast();
@@ -18,6 +19,7 @@ export default function PaymentsPage() {
     reference: '', 
     paymentDate: new Date().toISOString().split('T')[0]
   });
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Role-based access
   const isRequester = currentUser?.role === 'REQUESTER';
@@ -63,36 +65,47 @@ export default function PaymentsPage() {
     },
   });
 
+  const deleteMut = useMutation({
+    mutationFn: deletePayment,
+    onSuccess: () => {
+      push('Payment deleted successfully', 'success');
+      qc.invalidateQueries({ queryKey: ['payments'] });
+      qc.invalidateQueries({ queryKey: ['invoices'] });
+    },
+    onError: (error: any) => {
+      console.error('Payment deletion error:', error);
+      const message = error?.response?.data?.message || 'Failed to delete payment';
+      push(message, 'error');
+    },
+  });
+
   const canCreate = isFinanceOfficer;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Payments Management</h1>
-        <div className="text-sm text-gray-500">
-          Total Payments: {payments?.length || 0}
+        <div className="flex items-center space-x-4">
+          {isFinanceOfficer && (
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <i className="fas fa-file-excel mr-2"></i>
+              Export Excel
+            </button>
+          )}
+          <div className="text-sm text-gray-500">
+            Total Payments: {payments?.length || 0}
+          </div>
         </div>
       </div>
 
       {/* Information Section */}
-      <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-        <h3 className="text-sm font-semibold text-green-900 mb-2">Payment Status Guide</h3>
-        <div className="text-sm text-green-800 grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-          <div>
-            <p><strong>Draft:</strong> Payment record created but not yet processed</p>
-          </div>
-          <div>
-            <p><strong>Processed:</strong> Payment has been initiated and is being handled</p>
-          </div>
-          <div>
-            <p><strong>Cleared:</strong> Payment successfully completed and funds transferred</p>
-          </div>
-          <div>
-            <p><strong>Cancelled:</strong> Payment was cancelled before completion</p>
-          </div>
-          <div>
-            <p><strong>Failed:</strong> Payment attempt was unsuccessful</p>
-          </div>
+      <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+        <h3 className="text-sm font-semibold text-blue-900 mb-2">Payment Overview</h3>
+        <div className="text-sm text-blue-800">
+          <p>Manage payment records for invoices. Only finance officers can create new payments.</p>
         </div>
       </div>
 
@@ -278,6 +291,19 @@ export default function PaymentsPage() {
                                 Edit
                               </Link>
                             )}
+                            {isFinanceOfficer && payment.status === 'CANCELLED' && (
+                              <button
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this cancelled payment? This action cannot be undone.')) {
+                                    deleteMut.mutate(payment.id);
+                                  }
+                                }}
+                                className="text-red-600 hover:text-red-900 text-sm font-medium"
+                                disabled={deleteMut.isPending}
+                              >
+                                {deleteMut.isPending ? 'Deleting...' : 'Delete'}
+                              </button>
+                            )}
                           </div>
                         </Td>
                       </tr>
@@ -360,6 +386,19 @@ export default function PaymentsPage() {
                               Edit
                             </Link>
                           )}
+                          {isFinanceOfficer && payment.status === 'CANCELLED' && (
+                            <button
+                              onClick={() => {
+                                if (confirm('Are you sure you want to delete this cancelled payment? This action cannot be undone.')) {
+                                  deleteMut.mutate(payment.id);
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-900 text-sm font-medium"
+                              disabled={deleteMut.isPending}
+                            >
+                              {deleteMut.isPending ? 'Deleting...' : 'Delete'}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -370,6 +409,14 @@ export default function PaymentsPage() {
           </>
         )}
       </div>
+      
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title="Payments"
+        exportFunction={exportPaymentsExcel}
+        filename="payments_export"
+      />
     </div>
   );
 }

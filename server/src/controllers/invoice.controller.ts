@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { exportInvoicesToExcel } from '../utils/excel.util.js';
 import { sendHtmlMail, emailTemplates } from '../utils/mail.util';
 import { NotificationHelpers } from '../utils/notification.util';
 
@@ -58,13 +59,13 @@ export const createInvoice = async (req: Request, res: Response) => {
 
     const { requestId, invoiceDate, dueDate, grossAmount, taxAmount, netAmount } = parsed.data;
 
-    // Verify the request exists and is approved or fulfilled
+    // Verify the request exists and is approved (but not fulfilled)
     const request = await prisma.serviceRequest.findUnique({ where: { id: requestId } });
     if (!request) {
       return res.status(404).json({ message: 'Service request not found' });
     }
-    if (!['APPROVED', 'FULFILLED'].includes(request.status)) {
-      return res.status(400).json({ message: 'Can only create invoices for approved or fulfilled requests' });
+    if (request.status !== 'APPROVED') {
+      return res.status(400).json({ message: 'Can only create invoices for approved requests (not fulfilled)' });
     }
 
     const invoice = await prisma.invoice.create({
@@ -258,5 +259,34 @@ export const approveInvoiceForPayment = async (req: Request, res: Response) => {
   } catch (e) {
     console.error('approveInvoiceForPayment error', e);
     res.status(500).json({ message: 'Failed to approve invoice for payment' });
+  }
+};
+
+export const exportInvoices = async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ message: 'Unauthorized' });
+    if (user.role !== 'FINANCE_OFFICER') {
+      return res.status(403).json({ message: 'Only Finance Officers can export invoices' });
+    }
+
+    const { dateFrom, dateTo, status } = req.query;
+
+    const excelBuffer = await exportInvoicesToExcel({
+      dateFrom: dateFrom as string,
+      dateTo: dateTo as string,
+      status: status as string
+    });
+
+    const filename = `invoices_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', excelBuffer.length);
+
+    res.send(excelBuffer);
+  } catch (e) {
+    console.error('exportInvoices error', e);
+    res.status(500).json({ message: 'Failed to export invoices' });
   }
 };

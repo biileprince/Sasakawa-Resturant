@@ -56,6 +56,11 @@ export async function fulfillRequest(id: string): Promise<ServiceRequest> {
   return res.data;
 }
 
+export async function deleteRequest(id: string): Promise<{ message: string }> {
+  const res = await api.delete(`/requests/${id}`);
+  return res.data;
+}
+
 // Department operations
 export async function getDepartments(): Promise<Department[]> {
   const res = await api.get(`/departments`);
@@ -135,6 +140,11 @@ export async function updatePayment(id: string, data: {
   return res.data;
 }
 
+export async function deletePayment(id: string): Promise<{ message: string }> {
+  const res = await api.delete(`/payments/${id}`);
+  return res.data;
+}
+
 // File operations
 export async function uploadRequestAttachment(requestId: string, file: File) {
   const form = new FormData();
@@ -159,6 +169,39 @@ export async function uploadPaymentAttachment(paymentId: string, file: File) {
   form.append('file', file);
   const res = await api.post(`/payments/${paymentId}/attachments`, form, {
     headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+// Export functions
+export async function exportInvoicesExcel(params?: {
+  dateFrom?: string;
+  dateTo?: string;
+  status?: string;
+}): Promise<Blob> {
+  const queryParams = new URLSearchParams();
+  if (params?.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+  if (params?.dateTo) queryParams.append('dateTo', params.dateTo);
+  if (params?.status) queryParams.append('status', params.status);
+
+  const res = await api.get(`/invoices/export/excel?${queryParams.toString()}`, {
+    responseType: 'blob',
+  });
+  return res.data;
+}
+
+export async function exportPaymentsExcel(params?: {
+  dateFrom?: string;
+  dateTo?: string;
+  status?: string;
+}): Promise<Blob> {
+  const queryParams = new URLSearchParams();
+  if (params?.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+  if (params?.dateTo) queryParams.append('dateTo', params.dateTo);
+  if (params?.status) queryParams.append('status', params.status);
+
+  const res = await api.get(`/payments/export/excel?${queryParams.toString()}`, {
+    responseType: 'blob',
   });
   return res.data;
 }

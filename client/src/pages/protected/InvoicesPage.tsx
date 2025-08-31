@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { getInvoices, createInvoice, getRequests } from '../../services/request.service';
+import { getInvoices, createInvoice, getRequests, exportInvoicesExcel } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { Link } from 'react-router-dom';
+import ExportModal from '../../components/ExportModal';
 
 export default function InvoicesPage() {
   const { push } = useToast();
@@ -19,6 +20,7 @@ export default function InvoicesPage() {
     taxAmount: '0', 
     netAmount: '' 
   });
+  const [showExportModal, setShowExportModal] = useState(false);
   
   // Role-based access: Filter invoices based on user role
   const isRequester = currentUser?.role === 'REQUESTER';
@@ -34,9 +36,9 @@ export default function InvoicesPage() {
     ? allInvoices?.filter((inv: any) => inv.request?.requesterId === currentUser?.id) 
     : allInvoices;
   
-  // Filter requests that can have invoices created (APPROVED or FULFILLED)
+  // Filter requests that can have invoices created (APPROVED only, not FULFILLED)
   const eligibleRequests = requests?.filter((req: any) => 
-    ['APPROVED', 'FULFILLED'].includes(req.status)
+    req.status === 'APPROVED'
   ) || [];
 
   // Calculate net amount when gross or tax changes
@@ -99,8 +101,19 @@ export default function InvoicesPage() {
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Invoices Management</h1>
-        <div className="text-sm text-gray-500">
-          Total Invoices: {invoices?.length || 0}
+        <div className="flex items-center space-x-4">
+          {isFinanceOfficer && (
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <i className="fas fa-file-excel mr-2"></i>
+              Export Excel
+            </button>
+          )}
+          <div className="text-sm text-gray-500">
+            Total Invoices: {invoices?.length || 0}
+          </div>
         </div>
       </div>
 
@@ -412,6 +425,14 @@ export default function InvoicesPage() {
           </>
         )}
       </div>
+      
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title="Invoices"
+        exportFunction={exportInvoicesExcel}
+        filename="invoices_export"
+      />
     </div>
   );
 }
