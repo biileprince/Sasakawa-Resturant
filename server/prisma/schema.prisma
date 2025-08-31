@@ -25,6 +25,7 @@ model User {
   createdPayments  Payment[]        @relation("paymentCreator")
   uploadedAttachments Attachment[]  @relation("uploader")
   auditLogs        AuditLog[]
+  notifications    Notification[] @relation("notificationUser")
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 }
@@ -172,6 +173,7 @@ enum PaymentMethod {
   CHEQUE
   TRANSFER
   MOBILE_MONEY
+  CASH
 }
 
 enum PaymentStatus {
@@ -215,7 +217,8 @@ model Notification {
   recipientEmail String
   
   // Relationships
-  userId        String?             // Recipient user
+  userId        String              // Recipient user (made required)
+  user          User                @relation("notificationUser", fields: [userId], references: [id], onDelete: Cascade)
   requestId     String?
   request       ServiceRequest?     @relation(fields: [requestId], references: [id])
   invoiceId     String?
@@ -228,6 +231,7 @@ model Notification {
 }
 
 enum NotificationType {
+  REQUEST_CREATED
   REQUEST_SUBMITTED
   REQUEST_APPROVED
   REQUEST_REJECTED
@@ -236,6 +240,8 @@ enum NotificationType {
   INVOICE_APPROVED
   PAYMENT_RECORDED
   PAYMENT_COMPLETED
+  SYSTEM_ANNOUNCEMENT
+  REMINDER
   GENERAL
 }
 

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { sendHtmlMail, emailTemplates } from '../utils/mail.util';
+import { NotificationHelpers } from '../utils/notification.util';
 
 const prisma = new PrismaClient();
 
@@ -97,6 +99,24 @@ export const createInvoice = async (req: Request, res: Response) => {
         entityId: invoice.id,
       },
     });
+
+    // Send email notification to requester about invoice creation
+    try {
+      const emailTemplate = emailTemplates.invoiceCreated(invoice);
+      await sendHtmlMail(
+        invoice.request.requester.email,
+        emailTemplate.subject,
+        emailTemplate.html
+      );
+      
+      console.log(`Invoice creation notification sent to ${invoice.request.requester.email}`);
+      
+      // Create in-app notification
+      await NotificationHelpers.notifyInvoiceCreated(invoice);
+    } catch (emailError) {
+      console.error('Error sending invoice creation notification:', emailError);
+      // Don't fail invoice creation if email fails
+    }
 
     res.status(201).json(invoice);
   } catch (e) {

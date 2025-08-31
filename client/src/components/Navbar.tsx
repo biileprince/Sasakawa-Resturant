@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { UserButton, useUser } from '@clerk/clerk-react';
 import { useCurrentUser } from '../contexts/CurrentUserContext';
+import NotificationDropdown from './NotificationDropdown';
 
 interface NavItem {
   to: string;
@@ -89,7 +90,7 @@ export default function Navbar() {
           to={item.to}
           onClick={close}
           className={({ isActive }) => 
-            `group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 hover-lift ${
+            `group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
               isActive 
                 ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-primary' 
                 : 'text-gray-700 hover:text-primary-700 hover:bg-primary-50/80'
@@ -107,7 +108,7 @@ export default function Navbar() {
       <div className="relative">
         <button
           onClick={() => toggleDropdown(item.label)}
-          className={`group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 w-full ${
+          className={`group flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 w-full ${
             dropdownOpen === item.label
               ? 'bg-green-100 text-green-700'
               : 'text-gray-700 hover:text-green-700 hover:bg-green-50/80'
@@ -151,12 +152,12 @@ export default function Navbar() {
     <header className="glass-white sticky top-0 z-50 border-b border-primary-100 bg-white/95 backdrop-blur-lg shadow-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <Link to="/" className="group flex items-center gap-3 text-xl font-bold tracking-tight hover-lift">
+          <Link to="/" className="group flex items-center gap-3 text-xl font-bold tracking-tight">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-primary group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                SR
+              <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl flex items-center justify-center text-white shadow-primary group-hover:shadow-lg transition-all duration-200">
+                <i className="fas fa-utensils text-lg"></i>
               </div>
-              <div className="absolute -inset-1 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300 blur"></div>
+              <div className="absolute -inset-1 bg-gradient-to-br from-primary-600 to-primary-700 rounded-xl opacity-20 group-hover:opacity-25 transition-opacity duration-200 blur"></div>
             </div>
             <div className="flex flex-col">
               <span className="text-primary-600 font-bold text-lg leading-tight">Sasakawa</span>
@@ -171,7 +172,8 @@ export default function Navbar() {
             <DropdownItem key={item.to} item={item} />
           ))}
           {isSignedIn && (
-            <div className="ml-4 pl-4 border-l border-gray-200">
+            <div className="ml-4 pl-4 border-l border-gray-200 flex items-center gap-3">
+              <NotificationDropdown />
               <UserButton 
                 afterSignOutUrl="/" 
                 appearance={{
@@ -187,14 +189,17 @@ export default function Navbar() {
         {/* Mobile Menu Toggle */}
         <div className="lg:hidden flex items-center gap-3">
           {isSignedIn && (
-            <UserButton 
-              afterSignOutUrl="/" 
-              appearance={{
-                elements: {
-                  avatarBox: "w-9 h-9 rounded-lg shadow-md"
-                }
-              }}
-            />
+            <>
+              <NotificationDropdown />
+              <UserButton 
+                afterSignOutUrl="/" 
+                appearance={{
+                  elements: {
+                    avatarBox: "w-9 h-9 rounded-lg shadow-md"
+                  }
+                }}
+              />
+            </>
           )}
           <button 
             aria-label="Toggle navigation" 

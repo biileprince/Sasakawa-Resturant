@@ -11,7 +11,7 @@ CREATE TYPE "public"."RequestStatus" AS ENUM ('DRAFT', 'SUBMITTED', 'APPROVED', 
 CREATE TYPE "public"."InvoiceStatus" AS ENUM ('DRAFT', 'SUBMITTED', 'VERIFIED', 'APPROVED_FOR_PAYMENT', 'DISPUTED', 'PARTIALLY_PAID', 'PAID', 'CLOSED');
 
 -- CreateEnum
-CREATE TYPE "public"."PaymentMethod" AS ENUM ('CHEQUE', 'TRANSFER', 'MOBILE_MONEY');
+CREATE TYPE "public"."PaymentMethod" AS ENUM ('CHEQUE', 'TRANSFER', 'MOBILE_MONEY','CASH');
 
 -- CreateEnum
 CREATE TYPE "public"."PaymentStatus" AS ENUM ('DRAFT', 'PROCESSED', 'CLEARED', 'CANCELLED', 'FAILED');

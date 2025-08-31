@@ -158,6 +158,7 @@ export default function PaymentsPage() {
                   <option value="CHEQUE">Cheque</option>
                   <option value="TRANSFER">Bank Transfer</option>
                   <option value="MOBILE_MONEY">Mobile Money</option>
+                  <option value="CASH">Cash</option>
                 </select>
               </div>
               <div>

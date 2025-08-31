@@ -112,7 +112,7 @@ app.post('/api/debug/ensure-user', async (req, res) => {
     const data = await clerkResp.json();
     const email = data.email_addresses?.[0]?.email_address || `user-${clerkUserId}@example.com`;
     const name = `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'New User';
-    const created = await prisma.user.create({ data: { clerkId: clerkUserId, email, name } });
+    const created = await prisma.user.create({ data: { clerkId: clerkUserId, email, name, role: 'REQUESTER' } });
     res.json({ status: 'created', user: created });
   } catch (e) {
     console.error('debug ensure-user error', e);

@@ -132,7 +132,7 @@ export interface Payment {
   updatedAt: string;
 }
 
-export type PaymentMethod = 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY';
+export type PaymentMethod = 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY'|'CASH';
 
 export type PaymentStatus = 
   | 'DRAFT'

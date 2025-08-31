@@ -147,28 +147,25 @@ export default function MenuPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <section className="relative light-background py-20 lg:py-24 overflow-hidden">
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
-        
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center text-white">
-            <div className="glass-hero max-w-4xl mx-auto">
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-shadow-hero">
+          <div className="text-center">
+            <div className="backdrop-blur-sm bg-white/10 rounded-3xl p-8 border border-white/20 shadow-2xl max-w-4xl mx-auto">
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-white">
                 <span className="block">Our</span>
                 <span className="block text-white font-bold">
                   Menu
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto font-light opacity-90 text-shadow-elegant">
+              <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto font-light text-white/90 leading-relaxed">
                 Discover our diverse culinary offerings designed to make your university events memorable
               </p>
-              <p className="text-lg mb-10 max-w-2xl mx-auto opacity-80 text-shadow-elegant">
+              <p className="text-lg mb-10 max-w-2xl mx-auto text-white/80 leading-relaxed">
                 From continental breakfast to elegant dinners, featuring both local Ghanaian dishes and international cuisine
               </p>
               
-              <div className="inline-flex items-center gap-2 glass-white rounded-full px-6 py-3">
-                <i className="fas fa-utensils text-accent-yellow-600"></i>
-                <span className="text-primary-700 font-medium">Operating Hours: 8:00 AM - 8:00 PM (Mon-Sat)</span>
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-6 py-3">
+                <i className="fas fa-utensils text-accent-yellow-400"></i>
+                <span className="text-white font-medium">Operating Hours: 8:00 AM - 8:00 PM (Mon-Sat)</span>
               </div>
             </div>
           </div>
@@ -265,21 +262,21 @@ export default function MenuPage() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-indigo-600 rounded-lg p-8 text-center text-white">
+      <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg p-8 text-center text-white shadow-xl">
         <h2 className="text-2xl font-bold mb-4">Custom Menu Planning</h2>
-        <p className="text-indigo-100 mb-6">
+        <p className="text-primary-100 mb-6 leading-relaxed">
           Need something specific? We can customize any menu to fit your event requirements and dietary needs.
         </p>
         <div className="space-x-4">
           <a
             href="/requests/new"
-            className="inline-block bg-white text-indigo-600 px-6 py-3 rounded-md font-semibold hover:bg-gray-100 transition-colors"
+            className="inline-block bg-accent-yellow-500 hover:bg-accent-yellow-600 text-white px-6 py-3 rounded-md font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             Request Custom Menu
           </a>
           <a
             href="/services"
-            className="inline-block border border-white text-white px-6 py-3 rounded-md font-semibold hover:bg-white hover:text-indigo-600 transition-colors"
+            className="inline-block border-2 border-white/30 text-white px-6 py-3 rounded-md font-semibold hover:bg-white/10 transition-all duration-300"
           >
             View Services
           </a>

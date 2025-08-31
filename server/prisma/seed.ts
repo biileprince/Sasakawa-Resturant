@@ -231,6 +231,7 @@ async function main() {
     // 6. Sample Notifications
     await prisma.notification.create({
       data: {
+        userId: users['approver.cs@sasakawa.edu'], // Add required userId
         type: NotificationType.REQUEST_SUBMITTED,
         title: 'New Service Request Submitted',
         message: 'A new service request for Annual Computer Science Conference has been submitted and is awaiting approval.',
@@ -241,6 +242,7 @@ async function main() {
 
     await prisma.notification.create({
       data: {
+        userId: users['finance.officer@sasakawa.edu'], // Add required userId
         type: NotificationType.INVOICE_CREATED,
         title: 'Invoice Generated',
         message: 'Invoice INV-2025-002 has been generated for Engineering Graduation Ceremony.',

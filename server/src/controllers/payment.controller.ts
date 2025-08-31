@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { sendHtmlMail, emailTemplates } from '../utils/mail.util';
+import { NotificationHelpers } from '../utils/notification.util';
 
 const prisma = new PrismaClient();
 
@@ -46,8 +48,8 @@ export const createPayment = async (req: Request, res: Response) => {
 
     const schema = z.object({
       invoiceId: z.string().uuid('Invoice ID must be a valid UUID'),
-      method: z.enum(['CHEQUE', 'TRANSFER', 'MOBILE_MONEY'], {
-        errorMap: () => ({ message: 'Payment method must be CHEQUE, TRANSFER, or MOBILE_MONEY' }),
+      method: z.enum(['CHEQUE', 'TRANSFER', 'MOBILE_MONEY','CASH'], {
+        errorMap: () => ({ message: 'Payment method must be CHEQUE, TRANSFER,CASH, MOBILE_MONEY' }),
       }),
       reference: z.string().min(1, 'Payment reference is required').optional(),
       paymentDate: z.string().refine((date) => !isNaN(Date.parse(date)), 'Invalid payment date'),
@@ -136,6 +138,24 @@ export const createPayment = async (req: Request, res: Response) => {
         entityId: payment.id,
       },
     });
+
+    // Send email notification to requester about payment
+    try {
+      const emailTemplate = emailTemplates.paymentRecorded(payment);
+      await sendHtmlMail(
+        payment.invoice.request.requester.email,
+        emailTemplate.subject,
+        emailTemplate.html
+      );
+      
+      console.log(`Payment notification sent to ${payment.invoice.request.requester.email}`);
+      
+      // Create in-app notification
+      await NotificationHelpers.notifyPaymentRecorded(payment);
+    } catch (emailError) {
+      console.error('Error sending payment notification:', emailError);
+      // Don't fail payment creation if email fails
+    }
 
     res.status(201).json(payment);
   } catch (e) {

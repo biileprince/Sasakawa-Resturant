@@ -12,20 +12,46 @@ import { createInvoice, getInvoices, getInvoiceById, updateInvoice, approveInvoi
 import { createPayment, getPayments, getPaymentById, updatePayment } from '../controllers/payment.controller.js';
 import { getDepartments } from '../controllers/department.controller.js';
 import { getAllUsers, updateUserRole } from '../controllers/user.controller.js';
+import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '../controllers/notification.controller.js';
+import { uploadToCloudinary } from '../utils/cloudinary.util.js';
 
 const router = Router();
 
 // File upload storage config
 const uploadDir = process.env.UPLOAD_DIR || 'uploads';
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-const storage = multer.diskStorage({
-	destination: (_req, _file, cb) => cb(null, uploadDir),
-	filename: (_req, file, cb) => {
-		const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-		cb(null, unique + path.extname(file.originalname));
-	},
+
+// Choose storage based on environment
+const isProduction = process.env.NODE_ENV === 'production';
+
+const storage = isProduction 
+  ? multer.memoryStorage() // Use memory storage for Cloudinary
+  : multer.diskStorage({   // Use disk storage for local development
+      destination: (_req, _file, cb) => cb(null, uploadDir),
+      filename: (_req, file, cb) => {
+        const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, unique + path.extname(file.originalname));
+      },
+    });
+
+const upload = multer({ 
+  storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (_req, file, cb) => {
+    // Allow common file types
+    const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|txt/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Error: Only images and documents are allowed!'));
+    }
+  }
 });
-const upload = multer({ storage });
 
 router.get('/requests', authenticateRequest, loadCurrentUser, requestController.getRequests);
 router.get('/departments', optionalAuthentication, getDepartments);
@@ -48,11 +74,27 @@ router.post('/requests/:id/attachments', authenticateRequest, loadCurrentUser, u
 		if (!found) return res.status(404).json({ message: 'Request not found' });
 		const file = req.file;
 		if (!file) return res.status(400).json({ message: 'No file uploaded' });
+		
+		let fileUrl: string;
+		
+		if (isProduction) {
+			// Upload to Cloudinary in production
+			const cloudinaryResult = await uploadToCloudinary(
+				file.buffer, 
+				file.originalname, 
+				'sasakawa-requests'
+			);
+			fileUrl = cloudinaryResult.secure_url;
+		} else {
+			// Use local file path in development
+			fileUrl = `/uploads/${file.filename}`;
+		}
+		
 		const attachment = await prisma.attachment.create({ data: { 
 			fileName: file.originalname, 
 			fileType: file.mimetype || 'application/octet-stream',
 			fileSize: file.size,
-			fileUrl: `/uploads/${file.filename}`, 
+			fileUrl, 
 			uploadedById: user.id, 
 			requestId: id 
 		} });
@@ -109,12 +151,28 @@ router.post('/payments/:id/attachments', authenticateRequest, loadCurrentUser, u
 		if (!found) return res.status(404).json({ message: 'Payment not found' });
 		const file = req.file;
 		if (!file) return res.status(400).json({ message: 'No file uploaded' });
+		
+		let fileUrl: string;
+		
+		if (isProduction) {
+			// Upload to Cloudinary in production
+			const cloudinaryResult = await uploadToCloudinary(
+				file.buffer, 
+				file.originalname, 
+				'sasakawa-payments'
+			);
+			fileUrl = cloudinaryResult.secure_url;
+		} else {
+			// Use local file path in development
+			fileUrl = `/uploads/${file.filename}`;
+		}
+		
 		const attachment = await prisma.attachment.create({ 
 			data: { 
 				fileName: file.originalname, 
 				fileType: file.mimetype || 'application/octet-stream',
 				fileSize: file.size,
-				fileUrl: `/uploads/${file.filename}`, 
+				fileUrl, 
 				uploadedById: user.id, 
 				paymentId: id 
 			} 
@@ -129,5 +187,11 @@ router.post('/payments/:id/attachments', authenticateRequest, loadCurrentUser, u
 // User management (Finance Officer only)
 router.get('/users', authenticateRequest, loadCurrentUser, getAllUsers);
 router.patch('/users/:userId/role', authenticateRequest, loadCurrentUser, updateUserRole);
+
+// Notifications
+router.get('/notifications', authenticateRequest, loadCurrentUser, getUserNotifications);
+router.get('/notifications/unread-count', authenticateRequest, loadCurrentUser, getUnreadCount);
+router.patch('/notifications/:id/read', authenticateRequest, loadCurrentUser, markNotificationAsRead);
+router.patch('/notifications/mark-all-read', authenticateRequest, loadCurrentUser, markAllNotificationsAsRead);
 
 export default router;

@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { sendHtmlMail, emailTemplates } from '../utils/mail.util';
+import { NotificationHelpers } from '../utils/notification.util';
 
 const prisma = new PrismaClient();
 
@@ -154,6 +156,48 @@ export const createRequest = async (req: Request, res: Response) => {
       },
     });
 
+    // Send email notifications to approvers and finance officers
+    try {
+      const approversAndFinance = await prisma.user.findMany({
+        where: {
+          role: { in: ['APPROVER', 'FINANCE_OFFICER'] },
+          // Optionally filter by department if needed
+        },
+        include: {
+          department: true,
+        },
+      });
+
+      const emailTemplate = emailTemplates.requestCreated(created);
+      
+      // Send emails to all approvers and finance officers
+      for (const recipient of approversAndFinance) {
+        try {
+          await sendHtmlMail(
+            recipient.email,
+            emailTemplate.subject,
+            emailTemplate.html
+          );
+        } catch (emailError) {
+          console.error(`Failed to send email to ${recipient.email}:`, emailError);
+          // Don't throw error - email failure shouldn't break request creation
+        }
+      }
+      
+      console.log(`Request created notifications sent to ${approversAndFinance.length} recipients`);
+    } catch (emailError) {
+      console.error('Error sending request creation emails:', emailError);
+      // Email failure shouldn't break the request creation process
+    }
+
+    // Create in-app notifications
+    try {
+      await NotificationHelpers.notifyRequestCreated(created);
+    } catch (notificationError) {
+      console.error('Error creating in-app notifications:', notificationError);
+      // Don't break request creation if notifications fail
+    }
+
     res.status(201).json(created);
   } catch (e) {
     console.error('createRequest error', e);
@@ -256,7 +300,7 @@ export const updateRequest = async (req: Request, res: Response) => {
 };
 
 // Approval workflow endpoints
-async function transitionStatus(res: Response, id: string, newStatus: string, approverId?: string, rejectionReason?: string) {
+async function transitionStatus(res: Response, id: string, newStatus: string, approverId?: string, reason?: string, comments?: string) {
   try {
     const updateData: any = { 
       status: newStatus as any, 
@@ -267,8 +311,8 @@ async function transitionStatus(res: Response, id: string, newStatus: string, ap
       updateData.approvalDate = new Date();
     }
     
-    if (rejectionReason) {
-      updateData.rejectionReason = rejectionReason;
+    if (reason) {
+      updateData.rejectionReason = reason;
     }
 
     const updated = await prisma.serviceRequest.update({
@@ -276,7 +320,8 @@ async function transitionStatus(res: Response, id: string, newStatus: string, ap
       data: updateData,
       include: { 
         requester: { select: { id: true, name: true, email: true } }, 
-        approver: { select: { id: true, name: true } } 
+        approver: { select: { id: true, name: true } },
+        department: { select: { id: true, name: true } },
       },
     });
 
@@ -286,11 +331,79 @@ async function transitionStatus(res: Response, id: string, newStatus: string, ap
         data: {
           userId: approverId,
           action: `${newStatus}_REQUEST`,
-          details: `Request status changed to ${newStatus}`,
+          details: `Request status changed to ${newStatus}${comments ? ` - Comments: ${comments}` : ''}`,
           entityType: 'ServiceRequest',
           entityId: id,
         },
       });
+    }
+
+    // Send email notifications based on status change
+    try {
+      if (newStatus === 'APPROVED') {
+        // Send approval notification to requester
+        const emailTemplate = emailTemplates.requestApproved(updated, comments);
+        await sendHtmlMail(
+          updated.requester.email,
+          emailTemplate.subject,
+          emailTemplate.html
+        );
+        
+        // Also notify finance officers about the approval
+        const financeOfficers = await prisma.user.findMany({
+          where: { role: 'FINANCE_OFFICER' },
+        });
+        
+        const financeEmailTemplate = emailTemplates.requestApprovedForFinance(updated, comments);
+        
+        for (const financeOfficer of financeOfficers) {
+          try {
+            await sendHtmlMail(
+              financeOfficer.email,
+              financeEmailTemplate.subject,
+              financeEmailTemplate.html
+            );
+          } catch (emailError) {
+            console.error(`Failed to send finance notification to ${financeOfficer.email}:`, emailError);
+          }
+        }
+        
+        console.log(`Approval notification sent to ${updated.requester.email} and ${financeOfficers.length} finance officers`);
+        
+        // Create in-app notifications
+        await NotificationHelpers.notifyRequestApproved(updated, comments);
+        
+      } else if (newStatus === 'REJECTED') {
+        // Send rejection notification to requester
+        const emailTemplate = emailTemplates.requestRejected(updated, reason);
+        await sendHtmlMail(
+          updated.requester.email,
+          emailTemplate.subject,
+          emailTemplate.html
+        );
+        
+        console.log(`Rejection notification sent to ${updated.requester.email}`);
+        
+        // Create in-app notification
+        await NotificationHelpers.notifyRequestRejected(updated, reason);
+        
+      } else if (newStatus === 'NEEDS_REVISION') {
+        // Send revision notification to requester
+        const emailTemplate = emailTemplates.requestRevision(updated, comments || reason);
+        await sendHtmlMail(
+          updated.requester.email,
+          emailTemplate.subject,
+          emailTemplate.html
+        );
+        
+        console.log(`Revision notification sent to ${updated.requester.email}`);
+        
+        // Create in-app notification
+        await NotificationHelpers.notifyRequestRevision(updated, comments || reason);
+      }
+    } catch (emailError) {
+      console.error('Error sending status change notification:', emailError);
+      // Don't fail the status update if email fails
     }
 
     return res.json(updated);
@@ -338,12 +451,12 @@ export const approveRequest = async (req: Request, res: Response) => {
   if (!['APPROVER', 'FINANCE_OFFICER'].includes(user.role)) return res.status(403).json({ message: 'Forbidden' });
   
   const { id } = req.params;
-  const { reason } = req.body; // Optional approval comments
+  const { comments } = req.body; // Optional approval comments
   const existing = await prisma.serviceRequest.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ message: 'Not found' });
   if (!['SUBMITTED', 'NEEDS_REVISION'].includes(existing.status)) return res.status(409).json({ message: 'Cannot approve in current status' });
   
-  return transitionStatus(res, id, 'APPROVED', user.id, reason);
+  return transitionStatus(res, id, 'APPROVED', user.id, undefined, comments);
 };
 
 export const rejectRequest = async (req: Request, res: Response) => {
@@ -352,13 +465,13 @@ export const rejectRequest = async (req: Request, res: Response) => {
   if (!['APPROVER', 'FINANCE_OFFICER'].includes(user.role)) return res.status(403).json({ message: 'Forbidden' });
   
   const { id } = req.params;
-  const { rejectionReason } = req.body;
+  const { reason } = req.body; // Rejection reason
   
   const existing = await prisma.serviceRequest.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ message: 'Not found' });
   if (!['SUBMITTED', 'NEEDS_REVISION'].includes(existing.status)) return res.status(409).json({ message: 'Cannot reject in current status' });
   
-  return transitionStatus(res, id, 'REJECTED', user.id, rejectionReason);
+  return transitionStatus(res, id, 'REJECTED', user.id, reason);
 };
 
 export const requestRevision = async (req: Request, res: Response) => {
@@ -367,12 +480,12 @@ export const requestRevision = async (req: Request, res: Response) => {
   if (!['APPROVER', 'FINANCE_OFFICER'].includes(user.role)) return res.status(403).json({ message: 'Forbidden' });
   
   const { id } = req.params;
-  const { revisionNotes } = req.body; // Optional revision notes
+  const { comments } = req.body; // Revision comments
   const existing = await prisma.serviceRequest.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ message: 'Not found' });
   if (existing.status !== 'SUBMITTED') return res.status(409).json({ message: 'Only SUBMITTED can be moved to NEEDS_REVISION' });
   
-  return transitionStatus(res, id, 'NEEDS_REVISION', user.id, revisionNotes);
+  return transitionStatus(res, id, 'NEEDS_REVISION', user.id, undefined, comments);
 };
 
 export const fulfillRequest = async (req: Request, res: Response) => {

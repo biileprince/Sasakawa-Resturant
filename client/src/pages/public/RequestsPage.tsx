@@ -76,6 +76,7 @@ export default function RequestsPage() {
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service Type</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venue</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attendees</th>
@@ -96,6 +97,11 @@ export default function RequestsPage() {
                           <div className="text-sm font-medium text-gray-900">{r.eventName}</div>
                           {r.requestNo && <div className="text-xs text-gray-500">#{r.requestNo}</div>}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {r.serviceType || 'Not specified'}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(r.eventDate).toLocaleDateString()}
@@ -141,6 +147,12 @@ export default function RequestsPage() {
 
                 {/* Details Grid */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500 mb-1">Service Type</p>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {r.serviceType || 'Not specified'}
+                    </span>
+                  </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 mb-1">Date</p>
                     <p className="text-gray-900">{new Date(r.eventDate).toLocaleDateString()}</p>

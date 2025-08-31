@@ -1,15 +1,16 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import { useState } from 'react';
+import apiClient from '../../services/apiClient';
 import { approveRequest, rejectRequest, requestRevision, fulfillRequest, uploadRequestAttachment } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import AttachmentViewer from '../../components/AttachmentViewer';
+import ApprovalModal from '../../components/ApprovalModal';
 
 export default function RequestDetailPage() {
   const { id } = useParams();
   const user = useCurrentUser();
-  const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
   const qc = useQueryClient();
   const { push } = useToast();
 
@@ -17,21 +18,70 @@ export default function RequestDetailPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['request', id],
     queryFn: async () => {
-      const res = await axios.get(`${base}/requests/${id}`);
+      const res = await apiClient.get(`/requests/${id}`);
       return res.data;
     },
     enabled: !!id,
   });
 
   // IMPORTANT: All hooks must run on every render (avoid conditional early return before these)
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    action: 'approve' | 'reject' | 'revision';
+  }>({
+    isOpen: false,
+    action: 'approve'
+  });
+  
   const mkMut = (fn: (id: string)=>Promise<any>) => useMutation({
     mutationFn: () => fn(id!),
     onSuccess: () => { push('Status updated'); qc.invalidateQueries({ queryKey: ['request', id] }); qc.invalidateQueries({ queryKey: ['requests'] }); },
     onError: () => push('Action failed'),
   });
-  const approveMut = mkMut(approveRequest);
-  const rejectMut = mkMut(rejectRequest);
-  const revisionMut = mkMut(requestRevision);
+  
+  // Updated mutation functions that accept parameters
+  const approveMut = useMutation({
+    mutationFn: async (comments: string) => {
+      const response = await apiClient.post(`/requests/${id}/approve`, { comments });
+      return response.data;
+    },
+    onSuccess: () => { 
+      push('Request approved successfully', 'success'); 
+      setModalState({ isOpen: false, action: 'approve' });
+      qc.invalidateQueries({ queryKey: ['request', id] }); 
+      qc.invalidateQueries({ queryKey: ['requests'] }); 
+    },
+    onError: () => push('Failed to approve request', 'error'),
+  });
+  
+  const rejectMut = useMutation({
+    mutationFn: async (reason: string) => {
+      const response = await apiClient.post(`/requests/${id}/reject`, { reason });
+      return response.data;
+    },
+    onSuccess: () => { 
+      push('Request rejected', 'success'); 
+      setModalState({ isOpen: false, action: 'reject' });
+      qc.invalidateQueries({ queryKey: ['request', id] }); 
+      qc.invalidateQueries({ queryKey: ['requests'] }); 
+    },
+    onError: () => push('Failed to reject request', 'error'),
+  });
+  
+  const revisionMut = useMutation({
+    mutationFn: async (comments: string) => {
+      const response = await apiClient.post(`/requests/${id}/revision`, { comments });
+      return response.data;
+    },
+    onSuccess: () => { 
+      push('Revision requested', 'success'); 
+      setModalState({ isOpen: false, action: 'revision' });
+      qc.invalidateQueries({ queryKey: ['request', id] }); 
+      qc.invalidateQueries({ queryKey: ['requests'] }); 
+    },
+    onError: () => push('Failed to request revision', 'error'),
+  });
+  
   const fulfillMut = mkMut(fulfillRequest);
   const uploadMut = useMutation({
     mutationFn: async (file: File) => uploadRequestAttachment(id!, file),
@@ -96,53 +146,45 @@ export default function RequestDetailPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 flex-wrap w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             {canEdit && (
-              <Link to={`/requests/${id}/edit`} className="btn-action btn-action-edit flex-1 sm:flex-none">
+              <Link to={`/requests/${id}/edit`} className="btn-action btn-action-edit flex-1 sm:flex-none whitespace-nowrap">
                 <i className="fas fa-edit"></i>
                 <span className="hidden sm:inline">Edit Request</span>
                 <span className="sm:hidden">Edit</span>
               </Link>
             )}
             {canApprove && (
-              <div className="flex gap-2 flex-wrap flex-1 sm:flex-none">
-                <button 
-                  disabled={approveMut.isPending} 
-                  onClick={() => approveMut.mutate()} 
-                  className="btn-action btn-action-approve flex-1 sm:flex-none"
-                >
-                  {approveMut.isPending ? (
-                    <i className="fas fa-spinner fa-spin"></i>
-                  ) : (
-                    <i className="fas fa-check"></i>
-                  )}
-                  {approveMut.isPending ? 'Processing...' : 'Approve'}
-                </button>
-                <button 
-                  disabled={rejectMut.isPending} 
-                  onClick={() => rejectMut.mutate()} 
-                  className="btn-action btn-action-reject"
-                >
-                  {rejectMut.isPending ? (
-                    <i className="fas fa-spinner fa-spin"></i>
-                  ) : (
-                    <i className="fas fa-times"></i>
-                  )}
-                  {rejectMut.isPending ? 'Processing...' : 'Reject'}
-                </button>
-                {data.status === 'SUBMITTED' && (
-                  <button 
-                    disabled={revisionMut.isPending} 
-                    onClick={() => revisionMut.mutate()} 
-                    className="btn-action btn-action-revision"
-                  >
-                    {revisionMut.isPending ? (
-                      <i className="fas fa-spinner fa-spin"></i>
-                    ) : (
-                      <i className="fas fa-edit"></i>
+              <div className="flex flex-col sm:flex-row gap-2 flex-1 sm:flex-none w-full sm:w-auto">
+                {!modalState.isOpen && (
+                  <>
+                    <button 
+                      onClick={() => setModalState({ isOpen: true, action: 'approve' })}
+                      className="btn-action btn-action-approve flex-1 sm:flex-none whitespace-nowrap"
+                    >
+                      <i className="fas fa-check"></i>
+                      <span className="hidden sm:inline">Approve</span>
+                      <span className="sm:hidden">✓</span>
+                    </button>
+                    <button 
+                      onClick={() => setModalState({ isOpen: true, action: 'reject' })}
+                      className="btn-action btn-action-reject flex-1 sm:flex-none whitespace-nowrap"
+                    >
+                      <i className="fas fa-times"></i>
+                      <span className="hidden sm:inline">Reject</span>
+                      <span className="sm:hidden">✕</span>
+                    </button>
+                    {data.status === 'SUBMITTED' && (
+                      <button 
+                        onClick={() => setModalState({ isOpen: true, action: 'revision' })}
+                        className="btn-action btn-action-revision flex-1 sm:flex-none whitespace-nowrap text-sm"
+                      >
+                        <i className="fas fa-edit"></i>
+                        <span className="hidden sm:inline">Request Revision</span>
+                        <span className="sm:hidden">Revision</span>
+                      </button>
                     )}
-                    {revisionMut.isPending ? 'Processing...' : 'Request Revision'}
-                  </button>
+                  </>
                 )}
               </div>
             )}
@@ -164,6 +206,28 @@ export default function RequestDetailPage() {
         </div>
       </div>
 
+      <ApprovalModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ isOpen: false, action: 'approve' })}
+        request={data}
+        action={modalState.action}
+        onSubmit={(action, text) => {
+          const comment = text || '';
+          switch (action) {
+            case 'approve':
+              approveMut.mutate(comment);
+              break;
+            case 'reject':
+              rejectMut.mutate(comment);
+              break;
+            case 'revision':
+              revisionMut.mutate(comment);
+              break;
+          }
+        }}
+        isSubmitting={approveMut.isPending || rejectMut.isPending || revisionMut.isPending}
+      />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -175,6 +239,11 @@ export default function RequestDetailPage() {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <DetailItem 
+                icon="fas fa-concierge-bell" 
+                label="Service Type" 
+                value={data.serviceType || 'Not specified'} 
+              />
               <DetailItem 
                 icon="fas fa-calendar" 
                 label="Event Date" 
@@ -336,9 +405,9 @@ export default function RequestDetailPage() {
           attachments={data.attachments || []}
           entityId={data.id}
           entityType="request"
-          canUpload={canEdit}
+          canUpload={canEdit ?? false}
           uploadFunction={uploadRequestAttachment}
-          queryKey={['request', id]}
+          queryKey={id ? ['request', id] : ['request']}
         />
       </div>
     </div>

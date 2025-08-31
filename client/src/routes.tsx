@@ -18,6 +18,7 @@ import EditInvoicePage from './pages/protected/EditInvoicePage';
 import EditPaymentPage from './pages/protected/EditPaymentPage';
 import UserManagementPage from './pages/protected/UserManagementPage';
 import FinanceDashboard from './pages/protected/FinanceDashboard';
+import NotificationCenter from './pages/protected/NotificationCenter';
 
 const router = createBrowserRouter([
   {
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
       { path: 'approvals', element: <AuthenticatedLayout><ApprovalsPage /></AuthenticatedLayout> },
       { path: 'finance', element: <AuthenticatedLayout><FinanceDashboard /></AuthenticatedLayout> },
       { path: 'users', element: <AuthenticatedLayout><UserManagementPage /></AuthenticatedLayout> },
+      { path: 'notifications', element: <AuthenticatedLayout><NotificationCenter /></AuthenticatedLayout> },
       { path: 'invoices', element: <AuthenticatedLayout><InvoicesPage /></AuthenticatedLayout> },
       { path: 'invoices/:id', element: <AuthenticatedLayout><InvoiceDetailPage /></AuthenticatedLayout> },
       { path: 'invoices/:id/edit', element: <AuthenticatedLayout><EditInvoicePage /></AuthenticatedLayout> },

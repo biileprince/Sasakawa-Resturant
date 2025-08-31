@@ -8,28 +8,28 @@ export default function MainLayout() {
       <main className="flex-1 pb-16">
         <Outlet />
       </main>
-      <footer className="relative bg-white/80 backdrop-blur-sm border-t border-gray-200 text-center py-8">
+      <footer className="relative bg-gradient-to-r from-primary-600 to-primary-700 text-white py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                SR
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center shadow-lg">
+                <i className="fas fa-utensils text-white text-lg"></i>
               </div>
-              <div className="text-gray-600">
-                <span className="font-semibold">Sasakawa University</span>
-                <span className="hidden sm:inline"> • Restaurant Service Request System</span>
+              <div className="text-white">
+                <span className="font-bold text-lg">Sasakawa University</span>
+                <span className="hidden sm:block text-primary-100 text-sm">Restaurant Service Request System</span>
               </div>
             </div>
-            <div className="flex items-center gap-6 text-sm text-gray-500">
+            <div className="flex items-center gap-6 text-sm text-primary-100">
               <span>© 2025 All Rights Reserved</span>
               <div className="flex items-center gap-4">
-                <a href="#" className="hover:text-green-600 transition-colors duration-200">
+                <a href="#" className="hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-white/10">
                   <i className="fab fa-twitter"></i>
                 </a>
-                <a href="#" className="hover:text-green-600 transition-colors duration-200">
+                <a href="#" className="hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-white/10">
                   <i className="fab fa-facebook"></i>
                 </a>
-                <a href="#" className="hover:text-green-600 transition-colors duration-200">
+                <a href="#" className="hover:text-white transition-colors duration-200 p-2 rounded-lg hover:bg-white/10">
                   <i className="fab fa-instagram"></i>
                 </a>
               </div>
