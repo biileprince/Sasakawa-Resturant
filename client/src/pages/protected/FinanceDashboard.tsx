@@ -84,8 +84,22 @@ export default function FinanceDashboard() {
     }, 0) || 0
   };
 
-  const getRecentActivity = () => {
-    const activities = [];
+  const getRecentActivity = (): Array<{
+    type: string;
+    title: string;
+    description: string;
+    time: string;
+    status: string;
+    id: string;
+  }> => {
+    const activities: Array<{
+      type: string;
+      title: string;
+      description: string;
+      time: string;
+      status: string;
+      id: string;
+    }> = [];
     
     // Recent requests
     if (requests?.slice(0, 3)) {
@@ -93,6 +107,7 @@ export default function FinanceDashboard() {
         activities.push({
           type: 'request',
           title: `New request: ${request.eventName}`,
+          description: `Event Date: ${request.eventDate}`,
           time: new Date(request.createdAt).toLocaleDateString(),
           status: request.status,
           id: request.id
@@ -106,6 +121,7 @@ export default function FinanceDashboard() {
         activities.push({
           type: 'payment',
           title: `Payment received: GHS ${payment.amount}`,
+          description: `Payment method: ${payment.method}`,
           time: new Date(payment.createdAt).toLocaleDateString(),
           status: 'completed',
           id: payment.id
