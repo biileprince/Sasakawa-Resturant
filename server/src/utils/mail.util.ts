@@ -1,77 +1,20 @@
 import nodemailer from 'nodemailer';
 
-// TestMail.app API interface
-interface TestMailAPIResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-}
-
-async function sendViaTestMailAPI(to: string, subject: string, html: string, text?: string): Promise<void> {
-  const apiKey = process.env.TESTMAIL_API_KEY;
-  const namespace = process.env.TESTMAIL_NAMESPACE || 'default';
-  const from = process.env.MAIL_FROM || 'noreply@sasakawa.edu';
-
-  console.log('📧 TestMail.app Configuration:', {
-    apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : 'Not set',
-    namespace,
-    from,
-    to,
-    subject
-  });
-
-  if (!apiKey) {
-    throw new Error('TESTMAIL_API_KEY not configured');
-  }
-
-  const payload = {
-    to,
-    subject,
-    html,
-    text: text || subject,
-    from,
-    namespace
-  };
-
-  console.log('📧 Sending email via TestMail API:', { to, subject, from, namespace });
-
-  try {
-    const response = await fetch('https://api.testmail.app/api/json/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(payload)
-    });
-
-    console.log('📧 TestMail API Response Status:', response.status);
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('📧 TestMail API Error:', error);
-      throw new Error(`TestMail API error: ${response.status} - ${error}`);
-    }
-
-    const result: TestMailAPIResponse = await response.json();
-    console.log('📧 TestMail API Result:', result);
-    
-    if (!result.success) {
-      throw new Error(`TestMail send failed: ${result.error || result.message}`);
-    }
-
-    console.log(`📧 Email sent successfully via TestMail API to ${to}: ${subject}`);
-  } catch (error) {
-    console.error('📧 Failed to send email via TestMail API:', error);
-    throw error;
-  }
-}
-
 async function sendViaSMTP(to: string, subject: string, html: string, text?: string): Promise<any> {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const host = process.env.SMTP_HOST;
   
-  if (!host) throw new Error('SMTP_HOST not set');
+  console.log('📧 SMTP Configuration:', {
+    host,
+    port: process.env.SMTP_PORT || 587,
+    nodeEnv,
+    to,
+    subject
+  });
+  
+  if (!host) {
+    throw new Error('SMTP_HOST not set - please configure email settings');
+  }
 
   let transportConfig: any = {
     host,
@@ -85,6 +28,7 @@ async function sendViaSMTP(to: string, subject: string, html: string, text?: str
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     };
+    console.log('📧 Using SMTP authentication');
   }
 
   // Special configuration for Mailtrap in development
@@ -101,29 +45,85 @@ async function sendViaSMTP(to: string, subject: string, html: string, text?: str
     console.log('🔧 Using Mailtrap for development email testing');
   }
 
-  const transporter = nodemailer.createTransport(transportConfig);
-  const from = process.env.MAIL_FROM || 'no-reply@sasakawa.edu';
-  
-  const result = await transporter.sendMail({
-    from,
-    to,
-    subject,
-    html,
-    text: text || subject
-  });
+  // Production SMTP configurations
+  if (nodeEnv === 'production') {
+    // Gmail configuration
+    if (host.includes('smtp.gmail.com')) {
+      transportConfig.secure = true;
+      transportConfig.port = 465;
+      console.log('📧 Using Gmail SMTP configuration');
+    }
+    // SendGrid configuration
+    else if (host.includes('smtp.sendgrid.net')) {
+      transportConfig.port = 587;
+      transportConfig.secure = false;
+      console.log('📧 Using SendGrid SMTP configuration');
+    }
+    // Mailgun configuration
+    else if (host.includes('smtp.mailgun.org')) {
+      transportConfig.port = 587;
+      transportConfig.secure = false;
+      console.log('📧 Using Mailgun SMTP configuration');
+    }
+  }
 
-  console.log(`📧 Email sent via SMTP to ${to}: ${subject}`);
-  return result;
+  try {
+    const transporter = nodemailer.createTransporter(transportConfig);
+    const from = process.env.MAIL_FROM || 'noreply@sasakawa.edu';
+    
+    // Verify SMTP connection
+    console.log('📧 Verifying SMTP connection...');
+    await transporter.verify();
+    console.log('✅ SMTP connection verified');
+    
+    const result = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+      text: text || subject
+    });
+
+    console.log(`📧 Email sent successfully via SMTP to ${to}: ${subject}`);
+    return result;
+  } catch (error) {
+    console.error('📧 SMTP Error:', error);
+    throw error;
+  }
 }
 
+// Email service utility - Use SMTP for sending
 export async function sendHtmlMail(to: string, subject: string, html: string, text?: string) {
   try {
-    // Priority: Use TestMail API if configured, otherwise fall back to SMTP
-    if (process.env.TESTMAIL_API_KEY) {
-      await sendViaTestMailAPI(to, subject, html, text);
-    } else {
-      await sendViaSMTP(to, subject, html, text);
-    }
+    console.log('📧 Attempting to send email:', {
+      to,
+      subject,
+      service: 'SMTP'
+    });
+
+    await sendViaSMTP(to, subject, html, text);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error);
+    throw error;
+  }
+}
+
+export async function sendSimpleMail(to: string, subject: string, text: string) {
+  // Convert text to basic HTML
+  const html = `<p>${text.replace(/\n/g, '<br>')}</p>`;
+  await sendHtmlMail(to, subject, html, text);
+}
+
+// Email service utility - Use SMTP for sending
+export async function sendHtmlMail(to: string, subject: string, html: string, text?: string) {
+  try {
+    console.log('📧 Attempting to send email:', {
+      to,
+      subject,
+      service: 'SMTP'
+    });
+
+    await sendViaSMTP(to, subject, html, text);
   } catch (error) {
     console.error(`Failed to send email to ${to}:`, error);
     throw error;

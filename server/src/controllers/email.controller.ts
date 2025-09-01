@@ -39,7 +39,8 @@ export async function testEmailSending(req: any, res: any) {
             <p>${testMessage}</p>
             <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
             <p><strong>Environment:</strong> ${process.env.NODE_ENV || 'development'}</p>
-            <p><strong>Email Service:</strong> ${process.env.TESTMAIL_API_KEY ? 'TestMail.app API' : 'SMTP'}</p>
+            <p><strong>Email Service:</strong> SMTP</p>
+            <p><strong>SMTP Host:</strong> ${process.env.SMTP_HOST || 'Not configured'}</p>
             <div style="text-align: center; margin-top: 20px;">
               <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" class="button">Visit Application</a>
             </div>
@@ -58,7 +59,8 @@ export async function testEmailSending(req: any, res: any) {
         to,
         subject: testSubject,
         timestamp: new Date().toISOString(),
-        service: process.env.TESTMAIL_API_KEY ? 'TestMail.app API' : 'SMTP'
+        service: 'SMTP',
+        smtpHost: process.env.SMTP_HOST || 'Not configured'
       }
     });
   } catch (error) {

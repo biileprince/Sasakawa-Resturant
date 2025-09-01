@@ -76,9 +76,10 @@ DEPLOYMENT_CHECKLIST.md
 server/scripts
 PRODUCTION_DEPLOYMENT_GUIDE.md
 .env.production
-client\env.example
+client/env.example
 server/env.example
 .gitignore
+
 
 server/src/utils/mail-legacy.util.ts
 server/src/utils/mail-updated.util.ts
