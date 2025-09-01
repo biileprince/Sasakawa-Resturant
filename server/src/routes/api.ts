@@ -1,19 +1,19 @@
 //server/src/routes/api.ts
 
 import { Router } from 'express';
-import { optionalAuthentication, authenticateRequest, loadCurrentUser, canEditRequest } from '../middlewares/auth.middleware.js';
+import { optionalAuthentication, authenticateRequest, loadCurrentUser, canEditRequest } from '../middlewares/auth.middleware';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
-import * as requestController from '../controllers/request.controller.js';
-import { createInvoice, getInvoices, getInvoiceById, updateInvoice, approveInvoiceForPayment, exportInvoices } from '../controllers/invoice.controller.js';
-import { createPayment, getPayments, getPaymentById, updatePayment, deletePayment, exportPayments } from '../controllers/payment.controller.js';
-import { getDepartments } from '../controllers/department.controller.js';
-import { getAllUsers, updateUserRole } from '../controllers/user.controller.js';
-import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '../controllers/notification.controller.js';
-import { uploadToCloudinary } from '../utils/cloudinary.util.js';
+import * as requestController from '../controllers/request.controller';
+import { createInvoice, getInvoices, getInvoiceById, updateInvoice, approveInvoiceForPayment, exportInvoices } from '../controllers/invoice.controller';
+import { createPayment, getPayments, getPaymentById, updatePayment, deletePayment, exportPayments } from '../controllers/payment.controller';
+import { getDepartments } from '../controllers/department.controller';
+import { getAllUsers, updateUserRole } from '../controllers/user.controller';
+import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '../controllers/notification.controller';
+import { uploadToCloudinary } from '../utils/cloudinary.util';
 
 const router = Router();
 

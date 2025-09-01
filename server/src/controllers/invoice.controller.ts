@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { exportInvoicesToExcel } from '../utils/excel.util.js';
+import { exportInvoicesToExcel } from '../utils/excel.util';
 import { sendHtmlMail, emailTemplates } from '../utils/mail.util';
 import { NotificationHelpers } from '../utils/notification.util';
 

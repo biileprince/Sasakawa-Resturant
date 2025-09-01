@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { sendHtmlMail, emailTemplates } from '../utils/mail.util';
 import { NotificationHelpers } from '../utils/notification.util';
-import { exportPaymentsToExcel } from '../utils/excel.util.js';
+import { exportPaymentsToExcel } from '../utils/excel.util';
 
 const prisma = new PrismaClient();
 

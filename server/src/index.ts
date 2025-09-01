@@ -4,12 +4,12 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient, Role } from '@prisma/client';
-import { authenticateRequest, loadCurrentUser } from './middlewares/auth.middleware.js';
-import { computeCapabilities } from './utils/user.util.js';
+import { authenticateRequest, loadCurrentUser } from './middlewares/auth.middleware';
+import { computeCapabilities } from './utils/user.util';
 import path from 'path';
 import fs from 'fs';
 import { Webhook } from 'svix';
-import api from './routes/api.js';
+import api from './routes/api';
 
 const app = express();
 const prisma = new PrismaClient();

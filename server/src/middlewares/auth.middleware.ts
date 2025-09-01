@@ -3,7 +3,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ClerkExpressWithAuth, clerkClient } from '@clerk/clerk-sdk-node';
 import { PrismaClient } from '@prisma/client';
-import { ensureUserInDb } from '../utils/user.util.js';
+import { ensureUserInDb } from '../utils/user.util';
 
 const prisma = new PrismaClient();
 

@@ -2,7 +2,6 @@
   "name": "sasakawa-restaurant-server",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
   "description": "Backend API for Sasakawa Restaurant Service Request System",
   "scripts": {
     "dev": "tsx watch src/index.ts",
