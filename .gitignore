@@ -82,3 +82,4 @@ server/env.example
 
 server/src/utils/mail-legacy.util.ts
 server/src/utils/mail-updated.util.ts
+src/utils/mail-updated.util.ts
