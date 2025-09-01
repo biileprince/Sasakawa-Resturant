@@ -6,7 +6,7 @@
   "description": "Backend API for Sasakawa Restaurant Service Request System",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && npx prisma generate",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
