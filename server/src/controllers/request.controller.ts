@@ -342,7 +342,7 @@ async function transitionStatus(res: Response, id: string, newStatus: string, ap
     try {
       if (newStatus === 'APPROVED') {
         // Send approval notification to requester
-        const emailTemplate = emailTemplates.requestApproved(updated, comments);
+        const emailTemplate = emailTemplates.requestApproved(updated);
         await sendHtmlMail(
           updated.requester.email,
           emailTemplate.subject,
@@ -375,7 +375,7 @@ async function transitionStatus(res: Response, id: string, newStatus: string, ap
         
       } else if (newStatus === 'REJECTED') {
         // Send rejection notification to requester
-        const emailTemplate = emailTemplates.requestRejected(updated, reason);
+        const emailTemplate = emailTemplates.requestRejected(updated);
         await sendHtmlMail(
           updated.requester.email,
           emailTemplate.subject,

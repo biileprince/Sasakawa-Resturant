@@ -393,5 +393,200 @@ export const emailTemplates = {
       </body>
       </html>
     `
+  }),
+
+  // Additional templates for missing functions
+  invoiceCreated: (invoiceData: any) => ({
+    subject: `Invoice Created: ${invoiceData.description}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #7c3aed; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f9fafb; }
+          .details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+          .details table { width: 100%; }
+          .details td { padding: 5px 0; vertical-align: top; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          .button { display: inline-block; padding: 10px 20px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📄 New Invoice Created</h1>
+          </div>
+          <div class="content">
+            <p>A new invoice has been created for your service request.</p>
+            <div class="details">
+              <table>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${invoiceData.invoiceNumber}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${invoiceData.description}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>$${invoiceData.amount}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Due Date:</td><td>${new Date(invoiceData.dueDate).toLocaleDateString()}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${invoiceData.request?.department?.name}</td></tr>
+              </table>
+            </div>
+            <p>Please review the invoice and arrange for payment by the due date.</p>
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/protected/invoices" class="button">View Invoice</a>
+            </div>
+          </div>
+          <div class="footer">
+            <p>This is an automated message from the Sasakawa Restaurant Service Request System.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  paymentRecorded: (paymentData: any) => ({
+    subject: `Payment Recorded: Invoice ${paymentData.invoice?.invoiceNumber}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #059669; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f9fafb; }
+          .details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+          .details table { width: 100%; }
+          .details td { padding: 5px 0; vertical-align: top; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          .button { display: inline-block; padding: 10px 20px; background-color: #059669; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ Payment Recorded</h1>
+          </div>
+          <div class="content">
+            <p>Your payment has been successfully recorded in our system.</p>
+            <div class="details">
+              <table>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Payment ID:</td><td>#${paymentData.id}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${paymentData.invoice?.invoiceNumber}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>$${paymentData.amount}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Payment Method:</td><td>${paymentData.paymentMethod}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(paymentData.paymentDate).toLocaleDateString()}</td></tr>
+              </table>
+            </div>
+            <p>Thank you for your payment. Your invoice has been marked as paid.</p>
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/protected/payments" class="button">View Payment Details</a>
+            </div>
+          </div>
+          <div class="footer">
+            <p>This is an automated message from the Sasakawa Restaurant Service Request System.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  requestApprovedForFinance: (requestData: any, comments?: string) => ({
+    subject: `Request Approved - Ready for Finance: ${requestData.description}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #059669; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f9fafb; }
+          .details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+          .details table { width: 100%; }
+          .details td { padding: 5px 0; vertical-align: top; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          .button { display: inline-block; padding: 10px 20px; background-color: #059669; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>💼 Request Approved - Finance Action Required</h1>
+          </div>
+          <div class="content">
+            <p>A service request has been approved and is now ready for finance processing.</p>
+            <div class="details">
+              <table>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.id}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Approved by:</td><td>${requestData.approver?.name}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>$${requestData.budgetAmount}</td></tr>
+                ${comments ? `<tr><td style="padding: 5px 0; font-weight: bold;">Comments:</td><td>${comments}</td></tr>` : ''}
+              </table>
+            </div>
+            <p>Please proceed with financial processing and invoice generation.</p>
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/protected/requests" class="button">Process Request</a>
+            </div>
+          </div>
+          <div class="footer">
+            <p>This is an automated message from the Sasakawa Restaurant Service Request System.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  requestRevision: (requestData: any, comments?: string) => ({
+    subject: `Revision Required: ${requestData.description}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #f59e0b; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f9fafb; }
+          .details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+          .details table { width: 100%; }
+          .details td { padding: 5px 0; vertical-align: top; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          .button { display: inline-block; padding: 10px 20px; background-color: #f59e0b; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📝 Revision Required</h1>
+          </div>
+          <div class="content">
+            <p>Your service request requires some revisions before it can be processed further.</p>
+            <div class="details">
+              <table>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.id}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name}</td></tr>
+                ${comments ? `<tr><td style="padding: 5px 0; font-weight: bold;">Revision Notes:</td><td>${comments}</td></tr>` : ''}
+              </table>
+            </div>
+            <p>Please review the revision notes and update your request accordingly. You can then resubmit for approval.</p>
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/protected/requests" class="button">Edit Request</a>
+            </div>
+          </div>
+          <div class="footer">
+            <p>This is an automated message from the Sasakawa Restaurant Service Request System.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
   })
 };

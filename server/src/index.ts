@@ -13,7 +13,7 @@ import api from './routes/api.js';
 
 const app = express();
 const prisma = new PrismaClient();
-const allowed = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:3000').split(',').map(s => s.trim()).filter(Boolean);
+const allowed = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174').split(',').map(s => s.trim()).filter(Boolean);
 app.use(cors({ origin: (origin, cb) => {
   if (!origin || allowed.length === 0 || allowed.includes(origin)) return cb(null, true);
   return cb(new Error('Not allowed by CORS'));
