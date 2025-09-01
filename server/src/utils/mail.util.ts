@@ -47,7 +47,7 @@ async function sendViaTestMailAPI(to: string, subject: string, html: string, tex
   console.log(`📧 Email sent via TestMail API to ${to}: ${subject}`);
 }
 
-async function sendViaSMTP(to: string, subject: string, html: string, text?: string): Promise<void> {
+async function sendViaSMTP(to: string, subject: string, html: string, text?: string): Promise<any> {
   const nodeEnv = process.env.NODE_ENV || 'development';
   const host = process.env.SMTP_HOST;
   
