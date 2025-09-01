@@ -13,6 +13,7 @@ import { createPayment, getPayments, getPaymentById, updatePayment, deletePaymen
 import { getDepartments } from '../controllers/department.controller';
 import { getAllUsers, updateUserRole } from '../controllers/user.controller';
 import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '../controllers/notification.controller';
+import { testEmailSending, testEmailTemplate } from '../controllers/email.controller';
 import { uploadToCloudinary } from '../utils/cloudinary.util';
 
 const router = Router();
@@ -197,5 +198,9 @@ router.get('/notifications', authenticateRequest, loadCurrentUser, getUserNotifi
 router.get('/notifications/unread-count', authenticateRequest, loadCurrentUser, getUnreadCount);
 router.patch('/notifications/:id/read', authenticateRequest, loadCurrentUser, markNotificationAsRead);
 router.patch('/notifications/mark-all-read', authenticateRequest, loadCurrentUser, markAllNotificationsAsRead);
+
+// Email testing routes (for debugging)
+router.post('/test-email', testEmailSending);
+router.post('/test-email-template', testEmailTemplate);
 
 export default router;

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { useToast } from '../../contexts/ToastContext';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import apiClient from '../../services/apiClient';
 
 interface User {
@@ -69,10 +70,7 @@ export default function UserManagementPage() {
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-gray-600">Loading users...</p>
-        </div>
+        <LoadingSpinner size="lg" text="Loading users..." />
       </div>
     );
   }

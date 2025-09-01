@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { notificationService } from '../../services/notification.service';
 import { Notification } from '../../types/notification';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function NotificationTestPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -83,7 +84,7 @@ export default function NotificationTestPage() {
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <LoadingSpinner size="lg" text="Loading notifications..." />
             </div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-12">

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { updateRequest, uploadRequestAttachment } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import type { ServiceRequest, UpdateServiceRequestInput } from '../../types/request';
 
 export default function EditRequestPage() {
@@ -200,7 +201,11 @@ export default function EditRequestPage() {
     
     mutation.mutate(submitData);
   };
-  if (isLoading) return <div className="container mx-auto px-4 py-8"><div className="text-center">Loading...</div></div>;
+  if (isLoading) return (
+    <div className="container mx-auto px-4 py-8">
+      <LoadingSpinner size="lg" text="Loading request details..." />
+    </div>
+  );
   if (error) return <div className="container mx-auto px-4 py-8"><div className="text-center text-red-600">Failed to load request</div></div>;
   if (!data) return <div className="container mx-auto px-4 py-8"><div className="text-center">Request not found</div></div>;
 

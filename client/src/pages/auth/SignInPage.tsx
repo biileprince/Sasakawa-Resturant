@@ -1,5 +1,5 @@
 import { SignIn, useUser } from '@clerk/clerk-react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function SignInPage() {
@@ -28,17 +28,32 @@ export default function SignInPage() {
             <p className="text-gray-600">Sign in to your account</p>
           </div>
           
-          <div className="flex justify-center">
+          <div className="flex justify-center mb-6">
             <SignIn 
               fallbackRedirectUrl="/"
               forceRedirectUrl="/"
               appearance={{
                 elements: {
-                  rootBox: "w-full",
-                  card: "shadow-none border-0 w-full"
+                  rootBox: "w-full max-w-sm mx-auto",
+                  card: "shadow-none border-0 w-full",
+                  formButtonPrimary: "w-full",
+                  formFieldInput: "w-full",
+                  footer: "hidden"
                 }
               }}
             />
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link 
+                to="/sign-up" 
+                className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+              >
+                Sign up
+              </Link>
+            </p>
           </div>
         </div>
       </div>

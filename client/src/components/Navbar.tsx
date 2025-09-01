@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { UserButton, useUser } from '@clerk/clerk-react';
 import { useCurrentUser } from '../contexts/CurrentUserContext';
@@ -61,8 +61,22 @@ export default function Navbar() {
   const currentUser = useCurrentUser();
   const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+  const navRef = useRef<HTMLDivElement>(null);
 
   const navItems = getNavItems(currentUser);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setOpen(false);
+        setDropdownOpen(null);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const filtered = navItems.filter((item: NavItem) => {
     if (item.authOnly && !isSignedIn) return false;
@@ -149,7 +163,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="glass-white sticky top-0 z-50 border-b border-primary-100 bg-white/95 backdrop-blur-lg shadow-primary">
+    <header ref={navRef} className="glass-white sticky top-0 z-50 border-b border-primary-100 bg-white/95 backdrop-blur-lg shadow-primary">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" className="group flex items-center gap-3 text-xl font-bold tracking-tight">

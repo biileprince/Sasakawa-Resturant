@@ -152,8 +152,8 @@ export default function NotificationDropdown() {
       {/* Dropdown Panel */}
       {isOpen && (
         <div className="absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 
-                       w-80 sm:w-80 sm:right-0 
-                       -right-4 left-4 sm:left-auto
+                       w-80 sm:w-80 sm:right-0 sm:left-auto
+                       left-1/2 transform -translate-x-1/2 sm:translate-x-0
                        max-w-sm sm:max-w-none">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">

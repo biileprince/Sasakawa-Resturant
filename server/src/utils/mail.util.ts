@@ -12,6 +12,14 @@ async function sendViaTestMailAPI(to: string, subject: string, html: string, tex
   const namespace = process.env.TESTMAIL_NAMESPACE || 'default';
   const from = process.env.MAIL_FROM || 'noreply@sasakawa.edu';
 
+  console.log('📧 TestMail.app Configuration:', {
+    apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : 'Not set',
+    namespace,
+    from,
+    to,
+    subject
+  });
+
   if (!apiKey) {
     throw new Error('TESTMAIL_API_KEY not configured');
   }
@@ -25,26 +33,38 @@ async function sendViaTestMailAPI(to: string, subject: string, html: string, tex
     namespace
   };
 
-  const response = await fetch('https://api.testmail.app/api/json/send', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(payload)
-  });
+  console.log('📧 Sending email via TestMail API:', { to, subject, from, namespace });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`TestMail API error: ${response.status} - ${error}`);
+  try {
+    const response = await fetch('https://api.testmail.app/api/json/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    console.log('📧 TestMail API Response Status:', response.status);
+
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('📧 TestMail API Error:', error);
+      throw new Error(`TestMail API error: ${response.status} - ${error}`);
+    }
+
+    const result: TestMailAPIResponse = await response.json();
+    console.log('📧 TestMail API Result:', result);
+    
+    if (!result.success) {
+      throw new Error(`TestMail send failed: ${result.error || result.message}`);
+    }
+
+    console.log(`📧 Email sent successfully via TestMail API to ${to}: ${subject}`);
+  } catch (error) {
+    console.error('📧 Failed to send email via TestMail API:', error);
+    throw error;
   }
-
-  const result: TestMailAPIResponse = await response.json();
-  if (!result.success) {
-    throw new Error(`TestMail send failed: ${result.error || result.message}`);
-  }
-
-  console.log(`📧 Email sent via TestMail API to ${to}: ${subject}`);
 }
 
 async function sendViaSMTP(to: string, subject: string, html: string, text?: string): Promise<any> {
