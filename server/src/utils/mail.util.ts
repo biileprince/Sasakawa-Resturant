@@ -68,7 +68,7 @@ async function sendViaSMTP(to: string, subject: string, html: string, text?: str
   }
 
   try {
-    const transporter = nodemailer.createTransporter(transportConfig);
+    const transporter = nodemailer.createTransport(transportConfig);
     const from = process.env.MAIL_FROM || 'noreply@sasakawa.edu';
     
     // Verify SMTP connection
@@ -90,28 +90,6 @@ async function sendViaSMTP(to: string, subject: string, html: string, text?: str
     console.error('📧 SMTP Error:', error);
     throw error;
   }
-}
-
-// Email service utility - Use SMTP for sending
-export async function sendHtmlMail(to: string, subject: string, html: string, text?: string) {
-  try {
-    console.log('📧 Attempting to send email:', {
-      to,
-      subject,
-      service: 'SMTP'
-    });
-
-    await sendViaSMTP(to, subject, html, text);
-  } catch (error) {
-    console.error(`Failed to send email to ${to}:`, error);
-    throw error;
-  }
-}
-
-export async function sendSimpleMail(to: string, subject: string, text: string) {
-  // Convert text to basic HTML
-  const html = `<p>${text.replace(/\n/g, '<br>')}</p>`;
-  await sendHtmlMail(to, subject, html, text);
 }
 
 // Email service utility - Use SMTP for sending
