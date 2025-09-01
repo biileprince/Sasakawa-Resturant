@@ -199,7 +199,7 @@ export default function InvoiceDetailPage() {
             <div className="space-y-4">
               <Info label="Due Date" value={data.dueDate ? new Date(data.dueDate).toLocaleDateString() : 'Not set'} />
               <Info label="Created" value={new Date(data.createdAt).toLocaleDateString()} />
-              <Info label="Created By" value={data.creator?.name || 'System'} />
+              <Info label="Created By" value="System" />
               <Info label="Request ID" value={
                 <Link to={`/requests/${data.requestId}`} className="text-blue-300 hover:text-blue-200 font-mono">
                   #{data.requestId.slice(0,8)}
@@ -209,16 +209,16 @@ export default function InvoiceDetailPage() {
           </div>
         </section>
 
-        {data.attachments?.length > 0 && (
+        {data.attachments && data.attachments.length > 0 && (
           <section className="glass-card p-4 sm:p-6 shadow-lg">
             <h2 className="font-semibold mb-4 text-white flex items-center gap-2">
               <i className="fas fa-paperclip text-yellow-300"></i>
               Attachments
             </h2>
             <AttachmentViewer 
-              attachments={data.attachments} 
+              attachments={data.attachments || []} 
               canUpload={canUpload}
-              onUpload={(file) => uploadInvoiceAttachment(data.id, file)}
+              onUpload={(file: File) => uploadInvoiceAttachment(data.id, file)}
             />
           </section>
         )}
