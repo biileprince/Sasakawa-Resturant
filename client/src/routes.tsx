@@ -6,6 +6,7 @@ import ServicesPage from './pages/public/ServicesPage';
 import MenuPage from './pages/public/MenuPage';
 import RequestsPage from './pages/public/RequestsPage';
 import SignInPage from './pages/auth/SignInPage';
+import SignUpPage from './pages/auth/SignUpPage';
 import CreateRequestPage from './pages/protected/CreateRequestPage';
 import RequestDetailPage from './pages/public/RequestDetailPage';
 import EditRequestPage from './pages/protected/EditRequestPage';
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
       { path: 'payments/:id', element: <AuthenticatedLayout><PaymentDetailPage /></AuthenticatedLayout> },
       { path: 'payments/:id/edit', element: <AuthenticatedLayout><EditPaymentPage /></AuthenticatedLayout> },
       { path: 'sign-in', element: <SignInPage /> },
+      { path: 'sign-up', element: <SignUpPage /> },
     ],
   },
 ]);

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { notificationService } from '../services/notification.service';
 import { Notification, NotificationType } from '../types/notification';
 import { useCurrentUser } from '../contexts/CurrentUserContext';
+import LoadingSpinner from './LoadingSpinner';
 
 export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -150,7 +151,10 @@ export default function NotificationDropdown() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+        <div className="absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 
+                       w-80 sm:w-80 sm:right-0 
+                       -right-4 left-4 sm:left-auto
+                       max-w-sm sm:max-w-none">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
@@ -168,7 +172,7 @@ export default function NotificationDropdown() {
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center p-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <LoadingSpinner size="sm" text="Loading notifications..." />
               </div>
             ) : notifications.length === 0 ? (
               <div className="text-center p-8 text-gray-500">

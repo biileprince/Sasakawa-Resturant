@@ -120,7 +120,7 @@ export async function getPaymentById(id: string): Promise<Payment> {
 
 export async function createPayment(data: {
   invoiceId: string;
-  method: 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY';
+  method: 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY' | 'CASH';
   reference?: string;
   paymentDate: string;
   amount: number;
@@ -130,7 +130,7 @@ export async function createPayment(data: {
 }
 
 export async function updatePayment(id: string, data: {
-  method?: 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY';
+  method?: 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY' | 'CASH';
   reference?: string;
   paymentDate?: string;
   amount?: number;

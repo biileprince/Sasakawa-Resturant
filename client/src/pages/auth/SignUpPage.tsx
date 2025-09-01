@@ -1,8 +1,8 @@
-import { SignIn, useUser } from '@clerk/clerk-react';
+import { SignUp, useUser } from '@clerk/clerk-react';
 import { Navigate } from 'react-router-dom';
 import LoadingSpinner from '../../components/LoadingSpinner';
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const { isSignedIn, isLoaded } = useUser();
 
   if (!isLoaded) {
@@ -14,9 +14,7 @@ export default function SignInPage() {
   }
 
   if (isSignedIn) {
-    const redirect = sessionStorage.getItem('postSignInRedirect') || '/';
-    sessionStorage.removeItem('postSignInRedirect');
-    return <Navigate to={redirect} replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -24,12 +22,12 @@ export default function SignInPage() {
       <div className="w-full max-w-md mx-auto">
         <div className="bg-white rounded-lg shadow-md p-6 sm:p-8">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your account</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Create Account</h1>
+            <p className="text-gray-600">Get started with your new account</p>
           </div>
           
           <div className="flex justify-center">
-            <SignIn 
+            <SignUp 
               fallbackRedirectUrl="/"
               forceRedirectUrl="/"
               appearance={{

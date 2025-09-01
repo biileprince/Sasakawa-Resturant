@@ -41,7 +41,7 @@ export default function EditPaymentPage() {
   const updateMut = useMutation({
     mutationFn: async () => updatePayment(id!, {
       amount: Number(form.amount),
-      method: form.method as 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY',
+      method: form.method as 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY' | 'CASH',
       reference: form.reference || undefined,
       paymentDate: form.paymentDate,
       status: form.status
@@ -157,6 +157,7 @@ export default function EditPaymentPage() {
                 <option value="CHEQUE">Cheque</option>
                 <option value="TRANSFER">Bank Transfer</option>
                 <option value="MOBILE_MONEY">Mobile Money</option>
+                <option value="CASH">Cash</option>
               </select>
             </div>
             <div>
