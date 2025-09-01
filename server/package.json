@@ -6,7 +6,7 @@
   "description": "Backend API for Sasakawa Restaurant Service Request System",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json && npx prisma generate",
+    "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -16,7 +16,8 @@
     "promote-user": "tsx src/utils/promote-user.ts",
     "lint": "eslint . --ext .ts",
     "vercel-build": "npm run build && npx prisma generate",
-    "render-build": "npm install && npm run build && npx prisma generate"
+    "render-build": "npm run build && npx prisma generate",
+    "postbuild": "ls -la dist/"
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^5.0.0",
