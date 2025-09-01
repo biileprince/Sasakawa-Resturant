@@ -217,8 +217,11 @@ export default function InvoiceDetailPage() {
             </h2>
             <AttachmentViewer 
               attachments={data.attachments || []} 
+              entityId={data.id}
+              entityType="invoice"
               canUpload={canUpload}
-              onUpload={(file: File) => uploadInvoiceAttachment(data.id, file)}
+              uploadFunction={uploadInvoiceAttachment}
+              queryKey={['invoice', id!]}
             />
           </section>
         )}
