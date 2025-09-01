@@ -192,7 +192,7 @@ export const emailTemplates = {
             </div>
             <p>Please log in to the system to review and process this request.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/requests" class="button">Review Request</a>
+              <a href="${process.env.FRONTEND_URL}/requests" class="button">Review Request</a>
             </div>
           </div>
           <div class="footer">
@@ -240,7 +240,7 @@ export const emailTemplates = {
             </div>
             <p>Your request is now ready for processing. You'll receive further updates as progress is made.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/requests" class="button">View Request</a>
+              <a href="${process.env.FRONTEND_URL}/requests" class="button">View Request</a>
             </div>
           </div>
           <div class="footer">
@@ -287,7 +287,7 @@ export const emailTemplates = {
             </div>
             <p>Please review the feedback and update your request accordingly. You can resubmit after making the necessary changes.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/requests" class="button">Update Request</a>
+              <a href="${process.env.FRONTEND_URL}/requests" class="button">Update Request</a>
             </div>
           </div>
           <div class="footer">
@@ -335,7 +335,7 @@ export const emailTemplates = {
             </div>
             <p>Please process payment by the due date to avoid any service interruptions.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/invoices" class="button">View Invoice</a>
+              <a href="${process.env.FRONTEND_URL}/invoices" class="button">View Invoice</a>
             </div>
           </div>
           <div class="footer">
@@ -383,7 +383,7 @@ export const emailTemplates = {
             </div>
             <p>Your payment has been processed and your invoice has been marked as paid.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/payments" class="button">View Payment</a>
+              <a href="${process.env.FRONTEND_URL}/payments" class="button">View Payment</a>
             </div>
           </div>
           <div class="footer">
@@ -432,7 +432,7 @@ export const emailTemplates = {
             </div>
             <p>Please review the invoice and arrange for payment by the due date.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/invoices" class="button">View Invoice</a>
+              <a href="${process.env.FRONTEND_URL}/invoices" class="button">View Invoice</a>
             </div>
           </div>
           <div class="footer">
@@ -480,7 +480,7 @@ export const emailTemplates = {
             </div>
             <p>Thank you for your payment. Your invoice has been marked as paid.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/payments" class="button">View Payment Details</a>
+              <a href="${process.env.FRONTEND_URL}/payments" class="button">View Payment Details</a>
             </div>
           </div>
           <div class="footer">
@@ -530,7 +530,7 @@ export const emailTemplates = {
             </div>
             <p>Please proceed with financial processing and invoice generation.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/requests" class="button">Process Request</a>
+              <a href="${process.env.FRONTEND_URL}/requests" class="button">Process Request</a>
             </div>
           </div>
           <div class="footer">
@@ -578,7 +578,7 @@ export const emailTemplates = {
             </div>
             <p>Please review the revision notes and update your request accordingly. You can then resubmit for approval.</p>
             <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/protected/requests" class="button">Edit Request</a>
+              <a href="${process.env.FRONTEND_URL}/requests" class="button">Edit Request</a>
             </div>
           </div>
           <div class="footer">
