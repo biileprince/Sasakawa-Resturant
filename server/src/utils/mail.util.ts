@@ -152,7 +152,7 @@ export function getMailer() {
 // Email templates
 export const emailTemplates = {
   requestCreated: (requestData: any) => ({
-    subject: `New Service Request: ${requestData.description}`,
+    subject: `New Service Request: ${requestData.description || 'Service Request'}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -178,14 +178,14 @@ export const emailTemplates = {
             <p>A new service request has been submitted and requires your attention.</p>
             <div class="details">
               <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.id}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Requested by:</td><td>${requestData.requester?.name} (${requestData.requester?.email})</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Urgency:</td><td>${requestData.urgency}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>$${requestData.budgetAmount}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Expected Date:</td><td>${new Date(requestData.expectedCompletionDate).toLocaleDateString()}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.requestNo || requestData.id || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Requested by:</td><td>${requestData.requester?.name || 'N/A'} ${requestData.requester?.email ? `(${requestData.requester.email})` : ''}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Urgency:</td><td>${requestData.urgency || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${requestData.budgetAmount || 0}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Expected Date:</td><td>${requestData.expectedCompletionDate ? new Date(requestData.expectedCompletionDate).toLocaleDateString() : 'N/A'}</td></tr>
               </table>
             </div>
             <p>Please log in to the system to review and process this request.</p>
@@ -203,7 +203,7 @@ export const emailTemplates = {
   }),
 
   requestApproved: (requestData: any) => ({
-    subject: `Service Request Approved: ${requestData.description}`,
+    subject: `Service Request Approved: ${requestData.description || 'Service Request'}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -229,11 +229,11 @@ export const emailTemplates = {
             <p>Great news! Your service request has been approved.</p>
             <div class="details">
               <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.id}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Approved by:</td><td>${requestData.approver?.name}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>$${requestData.budgetAmount}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Expected Date:</td><td>${new Date(requestData.expectedCompletionDate).toLocaleDateString()}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.requestNo || requestData.id || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Approved by:</td><td>${requestData.approver?.name || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${requestData.budgetAmount || 0}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Expected Date:</td><td>${requestData.expectedCompletionDate ? new Date(requestData.expectedCompletionDate).toLocaleDateString() : 'N/A'}</td></tr>
               </table>
             </div>
             <p>Your request is now ready for processing. You'll receive further updates as progress is made.</p>
@@ -251,7 +251,7 @@ export const emailTemplates = {
   }),
 
   requestRejected: (requestData: any) => ({
-    subject: `Service Request Update: ${requestData.description}`,
+    subject: `Service Request Update: ${requestData.description || 'Service Request'}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -277,9 +277,9 @@ export const emailTemplates = {
             <p>Your service request needs some adjustments before it can be approved.</p>
             <div class="details">
               <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.id}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Reviewed by:</td><td>${requestData.approver?.name}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.requestNo || requestData.id || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Reviewed by:</td><td>${requestData.approver?.name || 'N/A'}</td></tr>
                 ${requestData.rejectionReason ? `<tr><td style="padding: 5px 0; font-weight: bold;">Feedback:</td><td>${requestData.rejectionReason}</td></tr>` : ''}
               </table>
             </div>
@@ -298,7 +298,7 @@ export const emailTemplates = {
   }),
 
   invoiceGenerated: (invoiceData: any) => ({
-    subject: `Invoice Generated: ${invoiceData.description}`,
+    subject: `Invoice Generated: ${invoiceData.description || 'Service Request'}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -321,14 +321,14 @@ export const emailTemplates = {
             <h1>📄 Invoice Generated</h1>
           </div>
           <div class="content">
-            <p>An invoice has been generated for a completed service request.</p>
+            <p>An invoice has been generated for your completed service request.</p>
             <div class="details">
               <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${invoiceData.invoiceNumber}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${invoiceData.description}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>$${invoiceData.amount}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Due Date:</td><td>${new Date(invoiceData.dueDate).toLocaleDateString()}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${invoiceData.request?.department?.name}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${invoiceData.invoiceNo || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${invoiceData.description || 'Service Request'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${invoiceData.netAmount || invoiceData.amount || 0}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Due Date:</td><td>${invoiceData.dueDate ? new Date(invoiceData.dueDate).toLocaleDateString() : 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${invoiceData.request?.department?.name || 'N/A'}</td></tr>
               </table>
             </div>
             <p>Please process payment by the due date to avoid any service interruptions.</p>
@@ -344,6 +344,11 @@ export const emailTemplates = {
       </html>
     `
   }),
+
+  // Alias for backward compatibility with invoice controller
+  invoiceCreated: (invoiceData: any) => {
+    return emailTemplates.invoiceGenerated(invoiceData);
+  },
 
   paymentReceived: (paymentData: any) => ({
     subject: `Payment Received: Invoice ${paymentData.invoice?.invoiceNumber}`,
@@ -374,7 +379,7 @@ export const emailTemplates = {
               <table>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Payment ID:</td><td>#${paymentData.id}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${paymentData.invoice?.invoiceNumber}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>$${paymentData.amount}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${paymentData.amount}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Payment Method:</td><td>${paymentData.paymentMethod}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(paymentData.paymentDate).toLocaleDateString()}</td></tr>
               </table>
@@ -393,105 +398,76 @@ export const emailTemplates = {
     `
   }),
 
-  // Additional templates for missing functions
-  invoiceCreated: (invoiceData: any) => ({
-    subject: `Invoice Created: ${invoiceData.description}`,
-    html: `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #7c3aed; color: white; padding: 20px; text-align: center; }
-          .content { padding: 20px; background-color: #f9fafb; }
-          .details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
-          .details table { width: 100%; }
-          .details td { padding: 5px 0; vertical-align: top; }
-          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-          .button { display: inline-block; padding: 10px 20px; background-color: #7c3aed; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>📄 New Invoice Created</h1>
-          </div>
-          <div class="content">
-            <p>A new invoice has been created for your service request.</p>
-            <div class="details">
-              <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${invoiceData.invoiceNumber}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${invoiceData.description}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>$${invoiceData.amount}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Due Date:</td><td>${new Date(invoiceData.dueDate).toLocaleDateString()}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${invoiceData.request?.department?.name}</td></tr>
-              </table>
-            </div>
-            <p>Please review the invoice and arrange for payment by the due date.</p>
-            <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/invoices" class="button">View Invoice</a>
-            </div>
-          </div>
-          <div class="footer">
-            <p>This is an automated message from the Sasakawa Restaurant Service Request System.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `
-  }),
+  paymentRecorded: (paymentData: any) => {
+    const invoiceNumber = paymentData.invoice?.invoiceNo || 'N/A';
+    const paymentId = paymentData.paymentNo || paymentData.id || 'N/A';
+    const paymentMethod = paymentData.method || 'N/A';
+    const paymentDate = paymentData.paymentDate ? new Date(paymentData.paymentDate).toLocaleDateString() : 'N/A';
+    const paidAmount = typeof paymentData.amount === 'number' ? paymentData.amount : 0;
+    const invoiceAmount = paymentData.invoice?.netAmount || 0;
+    const totalPaid = paymentData.invoice?.payments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || paidAmount;
+    const outstanding = Math.max(invoiceAmount - totalPaid, 0);
+    const isFullyPaid = outstanding === 0 && invoiceAmount > 0;
+    const description = paymentData.invoice?.description || 'Service Invoice';
 
-  paymentRecorded: (paymentData: any) => ({
-    subject: `Payment Recorded: Invoice ${paymentData.invoice?.invoiceNumber}`,
-    html: `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background-color: #059669; color: white; padding: 20px; text-align: center; }
-          .content { padding: 20px; background-color: #f9fafb; }
-          .details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
-          .details table { width: 100%; }
-          .details td { padding: 5px 0; vertical-align: top; }
-          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-          .button { display: inline-block; padding: 10px 20px; background-color: #059669; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>✅ Payment Recorded</h1>
-          </div>
-          <div class="content">
-            <p>Your payment has been successfully recorded in our system.</p>
-            <div class="details">
-              <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Payment ID:</td><td>#${paymentData.id}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${paymentData.invoice?.invoiceNumber}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>$${paymentData.amount}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Payment Method:</td><td>${paymentData.paymentMethod}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(paymentData.paymentDate).toLocaleDateString()}</td></tr>
-              </table>
+    return {
+      subject: `Payment Recorded: Invoice ${invoiceNumber}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background-color: #059669; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background-color: #f9fafb; }
+            .details { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+            .details table { width: 100%; }
+            .details td { padding: 5px 0; vertical-align: top; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+            .button { display: inline-block; padding: 10px 20px; background-color: #059669; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>💰 Payment Recorded</h1>
             </div>
-            <p>Thank you for your payment. Your invoice has been marked as paid.</p>
-            <div style="text-align: center;">
-              <a href="${process.env.FRONTEND_URL}/payments" class="button">View Payment Details</a>
+            <div class="content">
+              <p>We have received and recorded your payment for invoice <strong>#${invoiceNumber}</strong> (${description}).</p>
+              <div class="details">
+                <table>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Payment ID:</td><td>#${paymentId}</td></tr>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${invoiceNumber}</td></tr>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Payment Amount:</td><td>₵${paidAmount.toFixed(2)}</td></tr>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Total Paid to Date:</td><td>₵${totalPaid.toFixed(2)}</td></tr>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Invoice Total:</td><td>₵${invoiceAmount.toFixed(2)}</td></tr>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Outstanding Balance:</td><td>₵${outstanding.toFixed(2)}</td></tr>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Payment Method:</td><td>${paymentMethod}</td></tr>
+                  <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${paymentDate}</td></tr>
+                </table>
+              </div>
+              <p>
+                ${isFullyPaid
+                  ? 'Your invoice is now <strong>fully paid</strong>. Thank you!'
+                  : `Thank you for your payment. <br>If you have an outstanding balance, please pay the remaining amount at your earliest convenience.`}
+              </p>
+              <div style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL}/payments" class="button">View Payment Details</a>
+              </div>
+            </div>
+            <div class="footer">
+              <p>This is an automated message from the Sasakawa Restaurant Service Request System.</p>
             </div>
           </div>
-          <div class="footer">
-            <p>This is an automated message from the Sasakawa Restaurant Service Request System.</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `
-  }),
+        </body>
+        </html>
+      `
+    };
+  },
 
   requestApprovedForFinance: (requestData: any, comments?: string) => ({
-    subject: `Request Approved - Ready for Finance: ${requestData.description}`,
+    subject: `Request Approved - Ready for Finance: ${requestData.description || 'Service Request'}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -517,12 +493,12 @@ export const emailTemplates = {
             <p>A service request has been approved and is now ready for finance processing.</p>
             <div class="details">
               <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.id}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Approved by:</td><td>${requestData.approver?.name}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>$${requestData.budgetAmount}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.requestNo || requestData.id || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Approved by:</td><td>${requestData.approver?.name || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${requestData.budgetAmount || 0}</td></tr>
                 ${comments ? `<tr><td style="padding: 5px 0; font-weight: bold;">Comments:</td><td>${comments}</td></tr>` : ''}
               </table>
             </div>
@@ -541,7 +517,7 @@ export const emailTemplates = {
   }),
 
   requestRevision: (requestData: any, comments?: string) => ({
-    subject: `Revision Required: ${requestData.description}`,
+    subject: `Revision Required: ${requestData.description || 'Service Request'}`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -567,10 +543,10 @@ export const emailTemplates = {
             <p>Your service request requires some revisions before it can be processed further.</p>
             <div class="details">
               <table>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.id}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.requestNo || requestData.id || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType || 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name || 'N/A'}</td></tr>
                 ${comments ? `<tr><td style="padding: 5px 0; font-weight: bold;">Revision Notes:</td><td>${comments}</td></tr>` : ''}
               </table>
             </div>
