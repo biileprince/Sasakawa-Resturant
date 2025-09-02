@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../contexts/ToastContext';
+import { formatGhanaDate } from '../utils/dateFormat';
 
 interface AttachmentViewerProps {
   attachments: any[];
@@ -257,7 +258,7 @@ export default function AttachmentViewer({
                   <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500">
                     <span>{formatFileSize(attachment.fileSize || 0)}</span>
                     <span className="hidden sm:inline">•</span>
-                    <span>{new Date(attachment.uploadedAt || attachment.createdAt).toLocaleDateString()}</span>
+                    <span>{formatGhanaDate(attachment.uploadedAt || attachment.createdAt)}</span>
                     {attachment.fileType && (
                       <>
                         <span className="hidden sm:inline">•</span>

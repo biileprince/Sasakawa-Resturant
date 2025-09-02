@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getInvoiceById, updateInvoice } from '../../services/request.service';
+import { getInvoiceById, updateInvoice, uploadInvoiceAttachment } from '../../services/request.service';
 import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
+import AttachmentViewer from '../../components/AttachmentViewer';
 
 export default function EditInvoicePage() {
   const { id } = useParams<{ id: string }>();
@@ -248,6 +249,22 @@ export default function EditInvoicePage() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Invoice Attachments Section */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <i className="fas fa-paperclip text-yellow-600"></i>
+          Invoice Attachments
+        </h3>
+        <AttachmentViewer 
+          attachments={invoice.attachments || []} 
+          entityId={invoice.id}
+          entityType="invoice"
+          canUpload={true}
+          uploadFunction={uploadInvoiceAttachment}
+          queryKey={['invoice', id!]}
+        />
       </div>
     </div>
   );

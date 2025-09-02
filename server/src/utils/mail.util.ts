@@ -184,8 +184,8 @@ export const emailTemplates = {
                 <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name || 'N/A'}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Requested by:</td><td>${requestData.requester?.name || 'N/A'} ${requestData.requester?.email ? `(${requestData.requester.email})` : ''}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Urgency:</td><td>${requestData.urgency || 'N/A'}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${requestData.budgetAmount || 0}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Expected Date:</td><td>${requestData.expectedCompletionDate ? new Date(requestData.expectedCompletionDate).toLocaleDateString() : 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${Number(requestData.estimateAmount || 0).toFixed(2)}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Expected Date:</td><td>${requestData.expectedCompletionDate ? new Date(requestData.expectedCompletionDate).toLocaleDateString('en-GB') : 'N/A'}</td></tr>
               </table>
             </div>
             <p>Please log in to the system to review and process this request.</p>
@@ -232,8 +232,8 @@ export const emailTemplates = {
                 <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${requestData.requestNo || requestData.id || 'N/A'}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${requestData.description || 'N/A'}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Approved by:</td><td>${requestData.approver?.name || 'N/A'}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${requestData.budgetAmount || 0}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Expected Date:</td><td>${requestData.expectedCompletionDate ? new Date(requestData.expectedCompletionDate).toLocaleDateString() : 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${Number(requestData.estimateAmount || 0).toFixed(2)}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Event Date:</td><td>${requestData.eventDate ? new Date(requestData.eventDate).toLocaleDateString('en-GB') : 'N/A'}</td></tr>
               </table>
             </div>
             <p>Your request is now ready for processing. You'll receive further updates as progress is made.</p>
@@ -326,8 +326,8 @@ export const emailTemplates = {
               <table>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${invoiceData.invoiceNo || 'N/A'}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Description:</td><td>${invoiceData.description || 'Service Request'}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${invoiceData.netAmount || invoiceData.amount || 0}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Due Date:</td><td>${invoiceData.dueDate ? new Date(invoiceData.dueDate).toLocaleDateString() : 'N/A'}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${Number(invoiceData.netAmount || invoiceData.amount || 0).toFixed(2)}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Due Date:</td><td>${invoiceData.dueDate ? new Date(invoiceData.dueDate).toLocaleDateString('en-GB') : 'N/A'}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${invoiceData.request?.department?.name || 'N/A'}</td></tr>
               </table>
             </div>
@@ -379,9 +379,9 @@ export const emailTemplates = {
               <table>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Payment ID:</td><td>#${paymentData.id}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${paymentData.invoice?.invoiceNumber}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${paymentData.amount}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${Number(paymentData.amount || 0).toFixed(2)}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Payment Method:</td><td>${paymentData.paymentMethod}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(paymentData.paymentDate).toLocaleDateString()}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(paymentData.paymentDate).toLocaleDateString('en-GB')}</td></tr>
               </table>
             </div>
             <p>Your payment has been processed and your invoice has been marked as paid.</p>
@@ -402,10 +402,17 @@ export const emailTemplates = {
     const invoiceNumber = paymentData.invoice?.invoiceNo || 'N/A';
     const paymentId = paymentData.paymentNo || paymentData.id || 'N/A';
     const paymentMethod = paymentData.method || 'N/A';
-    const paymentDate = paymentData.paymentDate ? new Date(paymentData.paymentDate).toLocaleDateString() : 'N/A';
-    const paidAmount = typeof paymentData.amount === 'number' ? paymentData.amount : 0;
-    const invoiceAmount = paymentData.invoice?.netAmount || 0;
-    const totalPaid = paymentData.invoice?.payments?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || paidAmount;
+    const paymentDate = paymentData.paymentDate ? new Date(paymentData.paymentDate).toLocaleDateString('en-GB') : 'N/A';
+    
+    // Handle Prisma Decimal types - convert to number
+    const paidAmount = Number(paymentData.amount) || 0;
+    const invoiceAmount = Number(paymentData.invoice?.netAmount) || 0;
+    
+    // Calculate total paid from all payments (convert Decimals to numbers)
+    const totalPaid = paymentData.invoice?.payments?.reduce((sum: number, p: any) => {
+      return sum + (Number(p.amount) || 0);
+    }, 0) || paidAmount;
+    
     const outstanding = Math.max(invoiceAmount - totalPaid, 0);
     const isFullyPaid = outstanding === 0 && invoiceAmount > 0;
     const description = paymentData.invoice?.description || 'Service Invoice';
@@ -498,7 +505,7 @@ export const emailTemplates = {
                 <tr><td style="padding: 5px 0; font-weight: bold;">Service Type:</td><td>${requestData.serviceType || 'N/A'}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Department:</td><td>${requestData.department?.name || 'N/A'}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Approved by:</td><td>${requestData.approver?.name || 'N/A'}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${requestData.budgetAmount || 0}</td></tr>
+                <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${Number(requestData.estimateAmount || 0).toFixed(2)}</td></tr>
                 ${comments ? `<tr><td style="padding: 5px 0; font-weight: bold;">Comments:</td><td>${comments}</td></tr>` : ''}
               </table>
             </div>

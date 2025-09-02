@@ -105,6 +105,7 @@ export const createPayment = async (req: Request, res: Response) => {
       include: {
         invoice: {
           include: {
+            payments: true, // Include all payments for correct total calculation
             request: {
               include: {
                 requester: { select: { id: true, name: true, email: true } },

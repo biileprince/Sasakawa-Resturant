@@ -5,6 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { Link } from 'react-router-dom';
 import ExportModal from '../../components/ExportModal';
+import { formatGhanaDate } from '../../utils/dateFormat';
 
 export default function InvoicesPage() {
   const { push } = useToast();
@@ -17,7 +18,7 @@ export default function InvoicesPage() {
     invoiceDate: new Date().toISOString().split('T')[0], 
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
     grossAmount: '', 
-    taxAmount: '0', 
+    taxAmount: '0',
     netAmount: '' 
   });
   const [showExportModal, setShowExportModal] = useState(false);
@@ -304,7 +305,7 @@ export default function InvoicesPage() {
                         </Td>
                         <Td>
                           <div className="text-sm text-gray-900">
-                            {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}
+                            {inv.dueDate ? formatGhanaDate(inv.dueDate) : '-'}
                           </div>
                         </Td>
                         <Td>
@@ -373,7 +374,7 @@ export default function InvoicesPage() {
                         <div>
                           <p className="text-xs font-medium text-gray-500 mb-1">Due Date</p>
                           <p className="text-gray-900">
-                            {inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : '-'}
+                            {inv.dueDate ? formatGhanaDate(inv.dueDate) : '-'}
                           </p>
                         </div>
                         <div>

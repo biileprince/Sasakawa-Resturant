@@ -124,7 +124,7 @@ export default function FinanceDashboard() {
       payments.slice(0, 2).forEach((payment: any) => {
         activities.push({
           type: 'payment',
-          title: `Payment received: GHS ${payment.amount}`,
+          title: `Payment received: ₵${payment.amount}`,
           description: `Payment method: ${payment.method}`,
           time: new Date(payment.createdAt).toLocaleDateString(),
           status: 'completed',

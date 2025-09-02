@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getInvoiceById, uploadInvoiceAttachment } from '../../services/request.service';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import AttachmentViewer from '../../components/AttachmentViewer';
+import { formatGhanaDate, formatGhanaDateTime } from '../../utils/dateFormat';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();
@@ -85,7 +86,7 @@ export default function InvoiceDetailPage() {
         <section className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <Stat label="Net Amount" value={Intl.NumberFormat(undefined,{style:'currency',currency:'GHS'}).format(Number(data.netAmount) || 0)} />
           <Stat label="Status" value={<StatusBadge status={data.status} />} />
-          <Stat label="Due Date" value={data.dueDate ? new Date(data.dueDate).toLocaleDateString() : '-'} />
+          <Stat label="Due Date" value={data.dueDate ? formatGhanaDate(data.dueDate) : '-'} />
           <Stat label="Payments" value={`${data.payments?.length || 0}`} />
         </section>
 
@@ -128,7 +129,7 @@ export default function InvoiceDetailPage() {
                           <StatusBadge status={payment.status} />
                         </td>
                         <td className="p-3 text-gray-600">
-                          {new Date(payment.paymentDate).toLocaleDateString()}
+                          {formatGhanaDate(payment.paymentDate)}
                         </td>
                         <td className="p-3">
                           <Link to={`/payments/${payment.id}`} className="btn-detail">
@@ -158,7 +159,7 @@ export default function InvoiceDetailPage() {
                         <i className={`fas ${getPaymentMethodIcon(payment.method)}`}></i>
                         {payment.method}
                       </span>
-                      <span>{new Date(payment.paymentDate).toLocaleDateString()}</span>
+                      <span>{formatGhanaDate(payment.paymentDate)}</span>
                     </div>
                     <div className="mt-3">
                       <Link to={`/payments/${payment.id}`} className="btn-detail w-full">
@@ -197,8 +198,8 @@ export default function InvoiceDetailPage() {
               <Info label="Status" value={<StatusBadge status={data.status} />} />
             </div>
             <div className="space-y-4">
-              <Info label="Due Date" value={data.dueDate ? new Date(data.dueDate).toLocaleDateString() : 'Not set'} />
-              <Info label="Created" value={new Date(data.createdAt).toLocaleDateString()} />
+              <Info label="Due Date" value={data.dueDate ? formatGhanaDate(data.dueDate) : 'Not set'} />
+              <Info label="Created" value={formatGhanaDate(data.createdAt)} />
               <Info label="Request ID" value={
                 <Link to={`/requests/${data.requestId}`} className="text-blue-300 hover:text-blue-200 font-mono">
                   #{data.requestId.slice(0,8)}
@@ -208,22 +209,20 @@ export default function InvoiceDetailPage() {
           </div>
         </section>
 
-        {data.attachments && data.attachments.length > 0 && (
-          <section className="bg-white rounded-lg shadow-sm border p-6">
-            <h2 className="font-semibold mb-4 text-gray-900 flex items-center gap-2">
-              <i className="fas fa-paperclip text-yellow-600"></i>
-              Attachments
-            </h2>
-            <AttachmentViewer 
-              attachments={data.attachments || []} 
-              entityId={data.id}
-              entityType="invoice"
-              canUpload={canUpload}
-              uploadFunction={uploadInvoiceAttachment}
-              queryKey={['invoice', id!]}
-            />
-          </section>
-        )}
+        <section className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="font-semibold mb-4 text-gray-900 flex items-center gap-2">
+            <i className="fas fa-paperclip text-yellow-600"></i>
+            Invoice Attachments
+          </h2>
+          <AttachmentViewer 
+            attachments={data.attachments || []} 
+            entityId={data.id}
+            entityType="invoice"
+            canUpload={canUpload}
+            uploadFunction={uploadInvoiceAttachment}
+            queryKey={['invoice', id!]}
+          />
+        </section>
       </div>
     </div>
   );

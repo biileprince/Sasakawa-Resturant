@@ -5,6 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { useCurrentUser } from '../../contexts/CurrentUserContext';
 import { Link } from 'react-router-dom';
 import ExportModal from '../../components/ExportModal';
+import { formatGhanaDate } from '../../utils/dateFormat';
 
 export default function PaymentsPage() {
   const { push } = useToast();
@@ -269,7 +270,7 @@ export default function PaymentsPage() {
                         </Td>
                         <Td>
                           <div className="text-sm text-gray-900">
-                            {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : '-'}
+                            {payment.paymentDate ? formatGhanaDate(payment.paymentDate) : '-'}
                           </div>
                         </Td>
                         <Td>
@@ -354,7 +355,7 @@ export default function PaymentsPage() {
                         <div>
                           <p className="text-xs font-medium text-gray-500 mb-1">Payment Date</p>
                           <p className="text-gray-900">
-                            {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : '-'}
+                            {payment.paymentDate ? formatGhanaDate(payment.paymentDate) : '-'}
                           </p>
                         </div>
                         <div>
