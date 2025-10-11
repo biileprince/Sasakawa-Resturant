@@ -137,14 +137,14 @@ export default function MenuPage() {
   };
 
   const tabs = [
-    { id: 'breakfast', label: 'Breakfast', icon: '🌅' },
-    { id: 'lunch', label: 'Lunch', icon: '🌞' },
-    { id: 'dinner', label: 'Dinner', icon: '🌙' },
-    { id: 'beverages', label: 'Beverages', icon: '☕' }
+    { id: 'breakfast', label: 'Breakfast', icon: 'fas fa-coffee' },
+    { id: 'lunch', label: 'Lunch', icon: 'fas fa-utensils' },
+    { id: 'dinner', label: 'Dinner', icon: 'fas fa-moon' },
+    { id: 'beverages', label: 'Beverages', icon: 'fas fa-glass-water' }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
       {/* Hero Section */}
       <section className="relative light-background py-20 lg:py-24 overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -175,19 +175,19 @@ export default function MenuPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-8">
-        <nav className="-mb-px flex space-x-8 justify-center">
+      <div className="bg-white rounded-lg shadow-sm p-2 mb-8 max-w-2xl mx-auto">
+        <nav className="flex space-x-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-md font-medium text-sm transition-all duration-200 ${
                 activeTab === tab.id
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
-              <span className="mr-2">{tab.icon}</span>
+              <i className={`${tab.icon} text-sm`}></i>
               {tab.label}
             </button>
           ))}
@@ -200,84 +200,57 @@ export default function MenuPage() {
           {menuCategories[activeTab as keyof typeof menuCategories].title}
         </h2>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-2 gap-6">
           {menuCategories[activeTab as keyof typeof menuCategories].items.map((item, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md p-6 border hover:shadow-lg transition-shadow">
-              <div className="flex items-start space-x-4">
-                <div className="text-4xl flex-shrink-0">
-                  {item.image}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{item.name}</h3>
-                  <p className="text-gray-600 mb-4">{item.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {item.dietary.map((diet, dietIndex) => (
-                      <span
-                        key={dietIndex}
-                        className="inline-block bg-accent-green-100 text-accent-green-800 text-xs px-2 py-1 rounded-full"
-                      >
-                        {diet}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+            <div key={index} className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
+              <div className="mb-3">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
+                {item.popular && (
+                  <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mb-2">
+                    Popular
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-600 mb-4 leading-relaxed">{item.description}</p>
+              {item.price && (
+                <p className="text-blue-600 font-medium mb-3">{item.price}</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {item.dietary.map((diet, dietIndex) => (
+                  <span
+                    key={dietIndex}
+                    className="inline-block bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full"
+                  >
+                    {diet}
+                  </span>
+                ))}
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="bg-gray-50 rounded-lg p-8 mb-12">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">What Makes Our Menu Special</h3>
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-accent-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-accent-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-gray-900 mb-2">Fresh Ingredients</h4>
-            <p className="text-gray-600 text-sm">Locally sourced, seasonal ingredients prepared daily by our experienced chefs</p>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-gray-900 mb-2">Dietary Accommodations</h4>
-            <p className="text-gray-600 text-sm">Comprehensive options for all dietary needs including vegan, gluten-free, and allergen-friendly meals</p>
-          </div>
-          <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
-            </div>
-            <h4 className="font-semibold text-gray-900 mb-2">Quality Assurance</h4>
-            <p className="text-gray-600 text-sm">All our catering services meet the highest food safety and quality standards</p>
-          </div>
-        </div>
-      </div>
+
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-br from-primary-600 to-primary-700 rounded-lg p-8 text-center text-white shadow-xl">
+      <div className="bg-blue-600 rounded-lg p-8 text-center text-white shadow-sm">
         <h2 className="text-2xl font-bold mb-4">Custom Menu Planning</h2>
-        <p className="text-primary-100 mb-6 leading-relaxed">
+        <p className="text-blue-100 mb-6 leading-relaxed">
           Need something specific? We can customize any menu to fit your event requirements and dietary needs.
         </p>
-        <div className="space-x-4">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <a
             href="/requests/new"
-            className="inline-block bg-accent-yellow-500 hover:bg-accent-yellow-600 text-white px-6 py-3 rounded-md font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+            className="inline-flex items-center justify-center gap-2 bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200"
           >
+            <i className="fas fa-plus-circle"></i>
             Request Custom Menu
           </a>
           <a
             href="/services"
-            className="inline-block border-2 border-white/30 text-white px-6 py-3 rounded-md font-semibold hover:bg-white/10 transition-all duration-300"
+            className="inline-flex items-center justify-center gap-2 border-2 border-white/30 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all duration-200"
           >
+            <i className="fas fa-concierge-bell"></i>
             View Services
           </a>
         </div>
