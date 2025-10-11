@@ -1,29 +1,34 @@
 export interface ServiceRequest {
   id: string;
   requestNo: string;
-  
+
   // Event Information
   eventName: string;
   eventDate: string;
   venue: string;
   estimateAmount: number;
   attendees: number;
-  
+
   // Service Details
   serviceType: string;
   description?: string;
-  
+
+  // Food Package Information
+  selectedPackageId?: string;
+  packageName?: string;
+  pricePerPerson?: number;
+
   // Financial Information
   fundingSource: string;
-  
+
   // Contact Information
   contactPhone?: string;
-  
+
   // Status and Workflow
   status: RequestStatus;
   rejectionReason?: string;
   approvalDate?: string;
-  
+
   // Relationships
   departmentId: string;
   department?: { id: string; name: string; code: string };
@@ -31,11 +36,11 @@ export interface ServiceRequest {
   requester?: { id: string; name: string; email: string };
   approverId?: string;
   approver?: { id: string; name: string; email: string };
-  
+
   // Associated data
   invoices?: Invoice[];
   attachments?: Attachment[];
-  
+
   createdAt: string;
   updatedAt: string;
 }
@@ -47,21 +52,26 @@ export interface CreateServiceRequestInput {
   venue: string;
   estimateAmount: number;
   attendees: number;
-  
+
   // Service Details
   serviceType: string;
   description?: string;
-  
+
+  // Food Package Information
+  selectedPackageId?: string;
+  packageName?: string;
+  pricePerPerson?: number;
+
   // Financial Information
   fundingSource: string;
-  
+
   // Contact Information
   contactPhone?: string;
-  
+
   // Department
   departmentId?: string;
   departmentName?: string;
-  
+
   // User phone (if needed)
   phone?: string;
 }
@@ -81,14 +91,14 @@ export interface UpdateServiceRequestInput {
   rejectionReason?: string;
 }
 
-export type RequestStatus = 
-  | 'DRAFT'
-  | 'SUBMITTED'
-  | 'APPROVED'
-  | 'NEEDS_REVISION'
-  | 'REJECTED'
-  | 'FULFILLED'
-  | 'CLOSED';
+export type RequestStatus =
+  | "DRAFT"
+  | "SUBMITTED"
+  | "APPROVED"
+  | "NEEDS_REVISION"
+  | "REJECTED"
+  | "FULFILLED"
+  | "CLOSED";
 
 export interface Invoice {
   id: string;
@@ -107,15 +117,15 @@ export interface Invoice {
   updatedAt: string;
 }
 
-export type InvoiceStatus = 
-  | 'DRAFT'
-  | 'SUBMITTED'
-  | 'VERIFIED'
-  | 'APPROVED_FOR_PAYMENT'
-  | 'DISPUTED'
-  | 'PARTIALLY_PAID'
-  | 'PAID'
-  | 'CLOSED';
+export type InvoiceStatus =
+  | "DRAFT"
+  | "SUBMITTED"
+  | "VERIFIED"
+  | "APPROVED_FOR_PAYMENT"
+  | "DISPUTED"
+  | "PARTIALLY_PAID"
+  | "PAID"
+  | "CLOSED";
 
 export interface Payment {
   id: string;
@@ -132,14 +142,14 @@ export interface Payment {
   updatedAt: string;
 }
 
-export type PaymentMethod = 'CHEQUE' | 'TRANSFER' | 'MOBILE_MONEY'|'CASH';
+export type PaymentMethod = "CHEQUE" | "TRANSFER" | "MOBILE_MONEY" | "CASH";
 
-export type PaymentStatus = 
-  | 'DRAFT'
-  | 'PROCESSED'
-  | 'CLEARED'
-  | 'CANCELLED'
-  | 'FAILED';
+export type PaymentStatus =
+  | "DRAFT"
+  | "PROCESSED"
+  | "CLEARED"
+  | "CANCELLED"
+  | "FAILED";
 
 export interface Attachment {
   id: string;

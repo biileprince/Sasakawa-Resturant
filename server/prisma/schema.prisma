@@ -69,6 +69,11 @@ model ServiceRequest {
   serviceType       String               // Type of catering service
   description       String?              @db.Text
   
+  // Food Package Information
+  selectedPackageId String?              // ID of selected food package
+  packageName       String?              // Name of the selected package
+  pricePerPerson    Decimal?             @db.Decimal(10, 2)  // Price per person for the package
+  
   // Financial Information
   fundingSource     String
   
@@ -152,6 +157,7 @@ model Payment {
   paymentNo    String        @unique          // Auto-generated payment number
   method       PaymentMethod
   reference    String?                        // External reference number
+  chequeNumber String?                        // Cheque number for CHEQUE payments
   paymentDate  DateTime
   amount       Decimal       @db.Decimal(10, 2)
   status       PaymentStatus @default(PROCESSED)

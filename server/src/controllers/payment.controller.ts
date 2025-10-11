@@ -1,16 +1,16 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
-import { sendHtmlMail, emailTemplates } from '../utils/mail.util';
-import { NotificationHelpers } from '../utils/notification.util';
-import { exportPaymentsToExcel } from '../utils/excel.util';
+import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
+import { z } from "zod";
+import { sendHtmlMail, emailTemplates } from "../utils/mail.util";
+import { NotificationHelpers } from "../utils/notification.util";
+import { exportPaymentsToExcel } from "../utils/excel.util";
 
 const prisma = new PrismaClient();
 
 // Generate unique payment number
 const generatePaymentNo = () => {
   const year = new Date().getFullYear();
-  const random = String(Math.floor(Math.random() * 99999)).padStart(5, '0');
+  const random = String(Math.floor(Math.random() * 99999)).padStart(5, "0");
   return `PAY-${year}-${random}`;
 };
 
@@ -31,54 +31,73 @@ export const getPayments = async (_req: Request, res: Response) => {
         createdBy: { select: { id: true, name: true, email: true } },
         attachments: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
     res.json(payments);
   } catch (e) {
-    res.status(500).json({ message: 'Failed to fetch payments' });
+    res.status(500).json({ message: "Failed to fetch payments" });
   }
 };
 
 export const createPayment = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    if (!user) return res.status(401).json({ message: 'Unauthorized' });
-    if (!['FINANCE_OFFICER'].includes(user.role)) {
-      return res.status(403).json({ message: 'Only Finance Officers can create payments' });
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!["FINANCE_OFFICER"].includes(user.role)) {
+      return res
+        .status(403)
+        .json({ message: "Only Finance Officers can create payments" });
     }
 
     const schema = z.object({
-      invoiceId: z.string().uuid('Invoice ID must be a valid UUID'),
-      method: z.enum(['CHEQUE', 'TRANSFER', 'MOBILE_MONEY','CASH'], {
-        errorMap: () => ({ message: 'Payment method must be CHEQUE, TRANSFER,CASH, MOBILE_MONEY' }),
+      invoiceId: z.string().uuid("Invoice ID must be a valid UUID"),
+      method: z.enum(["CHEQUE", "TRANSFER", "MOBILE_MONEY", "CASH"], {
+        errorMap: () => ({
+          message: "Payment method must be CHEQUE, TRANSFER,CASH, MOBILE_MONEY",
+        }),
       }),
-      reference: z.string().min(1, 'Payment reference is required').optional(),
-      paymentDate: z.string().refine((date) => !isNaN(Date.parse(date)), 'Invalid payment date'),
-      amount: z.number().positive('Payment amount must be positive'),
+      reference: z.string().min(1, "Payment reference is required").optional(),
+      chequeNumber: z.string().optional(),
+      paymentDate: z
+        .string()
+        .refine((date) => !isNaN(Date.parse(date)), "Invalid payment date"),
+      amount: z.number().positive("Payment amount must be positive"),
     });
 
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: 'Validation failed', issues: parsed.error.issues });
+      return res
+        .status(400)
+        .json({ message: "Validation failed", issues: parsed.error.issues });
     }
 
-    const { invoiceId, method, reference, paymentDate, amount } = parsed.data;
+    const { invoiceId, method, reference, chequeNumber, paymentDate, amount } =
+      parsed.data;
 
     // Verify the invoice exists and can be paid
-    const invoice = await prisma.invoice.findUnique({ 
+    const invoice = await prisma.invoice.findUnique({
       where: { id: invoiceId },
       include: { payments: true },
     });
     if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
+      return res.status(404).json({ message: "Invoice not found" });
     }
-    if (!['SUBMITTED', 'VERIFIED', 'APPROVED_FOR_PAYMENT', 'PARTIALLY_PAID'].includes(invoice.status)) {
-      return res.status(400).json({ message: 'Invoice must be submitted or approved for payment' });
+    if (
+      ![
+        "SUBMITTED",
+        "VERIFIED",
+        "APPROVED_FOR_PAYMENT",
+        "PARTIALLY_PAID",
+      ].includes(invoice.status)
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invoice must be submitted or approved for payment" });
     }
 
     // Calculate total paid amount (excluding cancelled payments)
     const totalPaid = invoice.payments.reduce((sum, payment) => {
-      if (payment.status === 'CANCELLED') {
+      if (payment.status === "CANCELLED") {
         return sum;
       }
       return sum + Number(payment.amount);
@@ -86,8 +105,8 @@ export const createPayment = async (req: Request, res: Response) => {
     const remainingAmount = Number(invoice.netAmount) - totalPaid;
 
     if (amount > remainingAmount) {
-      return res.status(400).json({ 
-        message: `Payment amount (${amount}) exceeds remaining balance (${remainingAmount})` 
+      return res.status(400).json({
+        message: `Payment amount (${amount}) exceeds remaining balance (${remainingAmount})`,
       });
     }
 
@@ -97,9 +116,10 @@ export const createPayment = async (req: Request, res: Response) => {
         invoiceId,
         method,
         reference,
+        chequeNumber: method === "CHEQUE" ? chequeNumber : null,
         paymentDate: new Date(paymentDate),
         amount,
-        status: 'PROCESSED',
+        status: "PROCESSED",
         createdById: user.id,
       },
       include: {
@@ -121,11 +141,11 @@ export const createPayment = async (req: Request, res: Response) => {
     // Update invoice status based on payment
     const newTotalPaid = totalPaid + amount;
     let newInvoiceStatus = invoice.status;
-    
+
     if (newTotalPaid >= Number(invoice.netAmount)) {
-      newInvoiceStatus = 'PAID';
+      newInvoiceStatus = "PAID";
     } else if (newTotalPaid > 0) {
-      newInvoiceStatus = 'PARTIALLY_PAID';
+      newInvoiceStatus = "PARTIALLY_PAID";
     }
 
     if (newInvoiceStatus !== invoice.status) {
@@ -139,9 +159,9 @@ export const createPayment = async (req: Request, res: Response) => {
     await prisma.auditLog.create({
       data: {
         userId: user.id,
-        action: 'CREATE_PAYMENT',
+        action: "CREATE_PAYMENT",
         details: `Created payment ${payment.paymentNo} for invoice ${invoice.invoiceNo}`,
-        entityType: 'Payment',
+        entityType: "Payment",
         entityId: payment.id,
       },
     });
@@ -154,20 +174,22 @@ export const createPayment = async (req: Request, res: Response) => {
         emailTemplate.subject,
         emailTemplate.html
       );
-      
-      console.log(`Payment notification sent to ${payment.invoice.request.requester.email}`);
-      
+
+      console.log(
+        `Payment notification sent to ${payment.invoice.request.requester.email}`
+      );
+
       // Create in-app notification
       await NotificationHelpers.notifyPaymentRecorded(payment);
     } catch (emailError) {
-      console.error('Error sending payment notification:', emailError);
+      console.error("Error sending payment notification:", emailError);
       // Don't fail payment creation if email fails
     }
 
     res.status(201).json(payment);
   } catch (e) {
-    console.error('createPayment error', e);
-    res.status(500).json({ message: 'Failed to create payment' });
+    console.error("createPayment error", e);
+    res.status(500).json({ message: "Failed to create payment" });
   }
 };
 
@@ -191,34 +213,43 @@ export const getPaymentById = async (req: Request, res: Response) => {
         attachments: true,
       },
     });
-    
-    if (!payment) return res.status(404).json({ message: 'Payment not found' });
+
+    if (!payment) return res.status(404).json({ message: "Payment not found" });
     res.json(payment);
   } catch (e) {
-    res.status(500).json({ message: 'Failed to fetch payment' });
+    res.status(500).json({ message: "Failed to fetch payment" });
   }
 };
 
 export const updatePayment = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    if (!user) return res.status(401).json({ message: 'Unauthorized' });
-    if (!['FINANCE_OFFICER'].includes(user.role)) {
-      return res.status(403).json({ message: 'Only Finance Officers can update payments' });
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!["FINANCE_OFFICER"].includes(user.role)) {
+      return res
+        .status(403)
+        .json({ message: "Only Finance Officers can update payments" });
     }
 
     const { id } = req.params;
     const schema = z.object({
-      method: z.enum(['CHEQUE', 'TRANSFER', 'MOBILE_MONEY']).optional(),
+      method: z.enum(["CHEQUE", "TRANSFER", "MOBILE_MONEY"]).optional(),
       reference: z.string().min(1).optional(),
-      paymentDate: z.string().refine((date) => !isNaN(Date.parse(date)), 'Invalid payment date').optional(),
+      paymentDate: z
+        .string()
+        .refine((date) => !isNaN(Date.parse(date)), "Invalid payment date")
+        .optional(),
       amount: z.number().positive().optional(),
-      status: z.enum(['DRAFT', 'PROCESSED', 'CLEARED', 'CANCELLED', 'FAILED']).optional(),
+      status: z
+        .enum(["DRAFT", "PROCESSED", "CLEARED", "CANCELLED", "FAILED"])
+        .optional(),
     });
 
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) {
-      return res.status(400).json({ message: 'Validation failed', issues: parsed.error.issues });
+      return res
+        .status(400)
+        .json({ message: "Validation failed", issues: parsed.error.issues });
     }
 
     const updateData = parsed.data;
@@ -227,7 +258,8 @@ export const updatePayment = async (req: Request, res: Response) => {
     }
 
     const existing = await prisma.payment.findUnique({ where: { id } });
-    if (!existing) return res.status(404).json({ message: 'Payment not found' });
+    if (!existing)
+      return res.status(404).json({ message: "Payment not found" });
 
     const updated = await prisma.payment.update({
       where: { id },
@@ -252,7 +284,7 @@ export const updatePayment = async (req: Request, res: Response) => {
     if (updateData.status) {
       const invoice = updated.invoice;
       const totalPaid = invoice.payments.reduce((sum, payment) => {
-        if (payment.status === 'CANCELLED') {
+        if (payment.status === "CANCELLED") {
           return sum;
         }
         return sum + Number(payment.amount);
@@ -260,13 +292,13 @@ export const updatePayment = async (req: Request, res: Response) => {
 
       let newInvoiceStatus = invoice.status;
       if (totalPaid >= Number(invoice.netAmount)) {
-        newInvoiceStatus = 'PAID';
+        newInvoiceStatus = "PAID";
       } else if (totalPaid > 0) {
-        newInvoiceStatus = 'PARTIALLY_PAID';
+        newInvoiceStatus = "PARTIALLY_PAID";
       } else {
         // If no valid payments remain, reset to appropriate status
-        if (['PAID', 'PARTIALLY_PAID'].includes(invoice.status)) {
-          newInvoiceStatus = 'APPROVED_FOR_PAYMENT';
+        if (["PAID", "PARTIALLY_PAID"].includes(invoice.status)) {
+          newInvoiceStatus = "APPROVED_FOR_PAYMENT";
         }
       }
 
@@ -282,26 +314,28 @@ export const updatePayment = async (req: Request, res: Response) => {
     await prisma.auditLog.create({
       data: {
         userId: user.id,
-        action: 'UPDATE_PAYMENT',
+        action: "UPDATE_PAYMENT",
         details: `Updated payment ${updated.paymentNo}`,
-        entityType: 'Payment',
+        entityType: "Payment",
         entityId: updated.id,
       },
     });
 
     res.json(updated);
   } catch (e) {
-    console.error('updatePayment error', e);
-    res.status(500).json({ message: 'Failed to update payment' });
+    console.error("updatePayment error", e);
+    res.status(500).json({ message: "Failed to update payment" });
   }
 };
 
 export const deletePayment = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    if (!user) return res.status(401).json({ message: 'Unauthorized' });
-    if (!['FINANCE_OFFICER'].includes(user.role)) {
-      return res.status(403).json({ message: 'Only Finance Officers can delete payments' });
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (!["FINANCE_OFFICER"].includes(user.role)) {
+      return res
+        .status(403)
+        .json({ message: "Only Finance Officers can delete payments" });
     }
 
     const { id } = req.params;
@@ -318,12 +352,14 @@ export const deletePayment = async (req: Request, res: Response) => {
     });
 
     if (!payment) {
-      return res.status(404).json({ message: 'Payment not found' });
+      return res.status(404).json({ message: "Payment not found" });
     }
 
     // Only allow deletion of cancelled payments
-    if (payment.status !== 'CANCELLED') {
-      return res.status(400).json({ message: 'Only cancelled payments can be deleted' });
+    if (payment.status !== "CANCELLED") {
+      return res
+        .status(400)
+        .json({ message: "Only cancelled payments can be deleted" });
     }
 
     // Delete the payment
@@ -333,9 +369,9 @@ export const deletePayment = async (req: Request, res: Response) => {
 
     // Recalculate invoice status after payment deletion
     const invoice = payment.invoice;
-    const remainingPayments = invoice.payments.filter(p => p.id !== id);
+    const remainingPayments = invoice.payments.filter((p) => p.id !== id);
     const totalPaid = remainingPayments.reduce((sum, p) => {
-      if (p.status === 'CANCELLED') {
+      if (p.status === "CANCELLED") {
         return sum;
       }
       return sum + Number(p.amount);
@@ -343,13 +379,13 @@ export const deletePayment = async (req: Request, res: Response) => {
 
     let newInvoiceStatus = invoice.status;
     if (totalPaid >= Number(invoice.netAmount)) {
-      newInvoiceStatus = 'PAID';
+      newInvoiceStatus = "PAID";
     } else if (totalPaid > 0) {
-      newInvoiceStatus = 'PARTIALLY_PAID';
+      newInvoiceStatus = "PARTIALLY_PAID";
     } else {
       // If no valid payments remain, reset to appropriate status
-      if (['PAID', 'PARTIALLY_PAID'].includes(invoice.status)) {
-        newInvoiceStatus = 'APPROVED_FOR_PAYMENT';
+      if (["PAID", "PARTIALLY_PAID"].includes(invoice.status)) {
+        newInvoiceStatus = "APPROVED_FOR_PAYMENT";
       }
     }
 
@@ -364,26 +400,28 @@ export const deletePayment = async (req: Request, res: Response) => {
     await prisma.auditLog.create({
       data: {
         userId: user.id,
-        action: 'DELETE_PAYMENT',
+        action: "DELETE_PAYMENT",
         details: `Deleted cancelled payment ${payment.paymentNo}`,
-        entityType: 'Payment',
+        entityType: "Payment",
         entityId: payment.id,
       },
     });
 
-    res.json({ message: 'Payment deleted successfully' });
+    res.json({ message: "Payment deleted successfully" });
   } catch (e) {
-    console.error('deletePayment error', e);
-    res.status(500).json({ message: 'Failed to delete payment' });
+    console.error("deletePayment error", e);
+    res.status(500).json({ message: "Failed to delete payment" });
   }
 };
 
 export const exportPayments = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    if (!user) return res.status(401).json({ message: 'Unauthorized' });
-    if (user.role !== 'FINANCE_OFFICER') {
-      return res.status(403).json({ message: 'Only Finance Officers can export payments' });
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
+    if (user.role !== "FINANCE_OFFICER") {
+      return res
+        .status(403)
+        .json({ message: "Only Finance Officers can export payments" });
     }
 
     const { dateFrom, dateTo, status } = req.query;
@@ -391,18 +429,23 @@ export const exportPayments = async (req: Request, res: Response) => {
     const excelBuffer = await exportPaymentsToExcel({
       dateFrom: dateFrom as string,
       dateTo: dateTo as string,
-      status: status as string
+      status: status as string,
     });
 
-    const filename = `payments_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+    const filename = `payments_export_${
+      new Date().toISOString().split("T")[0]
+    }.xlsx`;
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Length', excelBuffer.length);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader("Content-Length", excelBuffer.length);
 
     res.send(excelBuffer);
   } catch (e) {
-    console.error('exportPayments error', e);
-    res.status(500).json({ message: 'Failed to export payments' });
+    console.error("exportPayments error", e);
+    res.status(500).json({ message: "Failed to export payments" });
   }
 };
