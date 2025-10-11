@@ -15,7 +15,7 @@
     "promote-user": "tsx src/utils/promote-user.ts",
     "lint": "eslint . --ext .ts",
     "vercel-build": "npm run build && npx prisma generate",
-    "render-build": "npm run build && npx prisma generate",
+    "render-build": "npm run build && npx prisma migrate deploy && npx prisma generate",
     "postbuild": "ls -la dist/"
   },
   "dependencies": {
