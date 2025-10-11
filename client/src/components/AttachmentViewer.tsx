@@ -8,10 +8,7 @@ interface AttachmentViewerProps {
   entityId: string;
   entityType: "request" | "invoice" | "payment" | "temp";
   canUpload?: boolean;
-  uploadFunction: (
-    entityId: string,
-    file: File
-  ) => Promise<any> | ((file: File) => Promise<any>);
+  uploadFunction: ((entityId: string, file: File) => Promise<any>) | ((file: File) => Promise<any>);
   queryKey?: string[];
   compact?: boolean;
   onDelete?: (attachmentId: string) => void;

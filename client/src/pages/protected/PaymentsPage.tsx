@@ -93,7 +93,7 @@ export default function PaymentsPage() {
           console.error("Error uploading attachments:", error);
           push(
             "Payment created but some attachments failed to upload",
-            "warning"
+            "error"
           );
         }
       }

@@ -132,6 +132,7 @@ export interface Payment {
   paymentNo: string;
   method: PaymentMethod;
   reference?: string;
+  chequeNumber?: string;
   paymentDate: string;
   amount: number;
   status: PaymentStatus;
