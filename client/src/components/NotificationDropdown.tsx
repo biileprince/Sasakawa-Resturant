@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { notificationService } from '../services/notification.service';
-import { Notification, NotificationType } from '../types/notification';
-import { useCurrentUser } from '../contexts/CurrentUserContext';
-import LoadingSpinner from './LoadingSpinner';
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { notificationService } from "../services/notification.service";
+import { Notification, NotificationType } from "../types/notification";
+import { useCurrentUser } from "../contexts/CurrentUserContext";
+import LoadingSpinner from "./LoadingSpinner";
 
 export default function NotificationDropdown() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -17,13 +17,16 @@ export default function NotificationDropdown() {
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Fetch unread count on mount and periodically
@@ -41,7 +44,7 @@ export default function NotificationDropdown() {
       const count = await notificationService.getUnreadCount();
       setUnreadCount(count);
     } catch (error) {
-      console.error('Error fetching unread count:', error);
+      console.error("Error fetching unread count:", error);
     }
   };
 
@@ -51,7 +54,7 @@ export default function NotificationDropdown() {
       const response = await notificationService.getUserNotifications(1, 10);
       setNotifications(response.notifications);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error("Error fetching notifications:", error);
     } finally {
       setLoading(false);
     }
@@ -61,14 +64,14 @@ export default function NotificationDropdown() {
     try {
       // Delete the notification (mark as read behavior)
       await notificationService.markAsRead(notification.id);
-      
+
       // Remove from local state
-      setNotifications(prev => prev.filter(n => n.id !== notification.id));
-      setUnreadCount(prev => Math.max(0, prev - 1));
-      
+      setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+
       // Close the dropdown
       setIsOpen(false);
-      
+
       // Navigate to the appropriate page based on notification type and related IDs
       if (notification.requestId) {
         navigate(`/requests/${notification.requestId}`);
@@ -78,7 +81,7 @@ export default function NotificationDropdown() {
         navigate(`/payments/${notification.paymentId}`);
       }
     } catch (error) {
-      console.error('Error handling notification click:', error);
+      console.error("Error handling notification click:", error);
     }
   };
 
@@ -88,7 +91,7 @@ export default function NotificationDropdown() {
       setNotifications([]); // Clear all notifications from local state
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error clearing all notifications:', error);
+      console.error("Error clearing all notifications:", error);
     }
   };
 
@@ -102,21 +105,21 @@ export default function NotificationDropdown() {
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
       case NotificationType.REQUEST_CREATED:
-        return 'fas fa-plus-circle text-blue-500';
+        return "fas fa-plus-circle text-blue-500";
       case NotificationType.REQUEST_SUBMITTED:
-        return 'fas fa-paper-plane text-blue-500';
+        return "fas fa-paper-plane text-blue-500";
       case NotificationType.REQUEST_APPROVED:
-        return 'fas fa-check-circle text-green-500';
+        return "fas fa-check-circle text-green-500";
       case NotificationType.REQUEST_REJECTED:
-        return 'fas fa-times-circle text-red-500';
+        return "fas fa-times-circle text-red-500";
       case NotificationType.REQUEST_REVISION:
-        return 'fas fa-edit text-orange-500';
+        return "fas fa-edit text-orange-500";
       case NotificationType.INVOICE_CREATED:
-        return 'fas fa-file-invoice text-blue-500';
+        return "fas fa-file-invoice text-blue-500";
       case NotificationType.PAYMENT_RECORDED:
-        return 'fas fa-credit-card text-green-500';
+        return "fas fa-credit-card text-green-500";
       default:
-        return 'fas fa-bell text-gray-500';
+        return "fas fa-bell text-gray-500";
     }
   };
 
@@ -125,9 +128,10 @@ export default function NotificationDropdown() {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
 
@@ -144,20 +148,24 @@ export default function NotificationDropdown() {
         <i className="fas fa-bell text-xl text-gray-600"></i>
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 
+        <div
+          className="absolute mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-50 
                        w-80 sm:w-80 sm:right-0 sm:left-auto
                        left-1/2 transform -translate-x-1/2 sm:translate-x-0
-                       max-w-sm sm:max-w-none">
+                       max-w-sm sm:max-w-none"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-800">Notifications</h3>
+            <h3 className="text-lg font-semibold text-gray-800">
+              Notifications
+            </h3>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
@@ -186,16 +194,24 @@ export default function NotificationDropdown() {
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
                     className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-200 ${
-                      !notification.read ? 'bg-blue-50' : ''
+                      !notification.read ? "bg-blue-50" : ""
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <i className={`${getNotificationIcon(notification.type)} text-lg mt-1`}></i>
+                      <i
+                        className={`${getNotificationIcon(
+                          notification.type
+                        )} text-lg mt-1`}
+                      ></i>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between">
-                          <h4 className={`text-sm font-medium ${
-                            !notification.read ? 'text-gray-900' : 'text-gray-700'
-                          }`}>
+                          <h4
+                            className={`text-sm font-medium ${
+                              !notification.read
+                                ? "text-gray-900"
+                                : "text-gray-700"
+                            }`}
+                          >
                             {notification.title}
                           </h4>
                           {!notification.read && (
@@ -219,7 +235,7 @@ export default function NotificationDropdown() {
           {/* Footer */}
           {notifications.length > 0 && (
             <div className="p-3 border-t border-gray-100">
-              <Link 
+              <Link
                 to="/notifications"
                 className="block w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
                 onClick={() => setIsOpen(false)}

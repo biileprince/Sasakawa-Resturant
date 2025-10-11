@@ -1092,10 +1092,10 @@ export default function CreateRequestPage() {
 
         {/* Food Package Selection Modal */}
         {showPackageModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden">
-              {/* Modal Header */}
-              <div className="p-6 border-b border-gray-200">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999] overflow-y-auto">
+            <div className="bg-white rounded-lg max-w-6xl w-full my-8 flex flex-col max-h-[calc(100vh-4rem)]">
+              {/* Modal Header - Fixed */}
+              <div className="p-6 border-b border-gray-200 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">
@@ -1118,8 +1118,8 @@ export default function CreateRequestPage() {
                 </div>
               </div>
 
-              {/* Modal Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+              {/* Modal Content - Scrollable */}
+              <div className="p-6 overflow-y-auto flex-1 min-h-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {availablePackages.map((pkg: any) => (
                     <div
@@ -1211,8 +1211,8 @@ export default function CreateRequestPage() {
                 </div>
               </div>
 
-              {/* Modal Footer */}
-              <div className="p-6 border-t border-gray-200 bg-gray-50">
+              {/* Modal Footer - Fixed */}
+              <div className="p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-600">
                     <i className="fas fa-info-circle mr-2"></i>
