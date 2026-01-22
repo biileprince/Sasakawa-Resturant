@@ -5,7 +5,7 @@
   "description": "Backend API for Sasakawa Restaurant Service Request System",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "npx prisma generate && tsc -p tsconfig.json",
+    "build": "npx prisma generate && npx prisma migrate deploy && tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
@@ -14,7 +14,7 @@
     "db:reset": "prisma migrate reset --force && npm run seed",
     "promote-user": "tsx src/utils/promote-user.ts",
     "lint": "eslint . --ext .ts",
-    "vercel-build": "npx prisma generate && tsc -p tsconfig.json",
+    "vercel-build": "npx prisma generate && npx prisma migrate deploy && tsc -p tsconfig.json",
     "render-build": "npx prisma generate && npx prisma migrate deploy && tsc -p tsconfig.json",
     "postbuild": "ls -la dist/"
   },
