@@ -20,10 +20,13 @@ async function sendViaResend(
   const from = process.env.MAIL_FROM || "onboarding@resend.dev";
   const resend = getResendClient();
   
+  // Sanitize subject - remove newlines and limit length
+  const cleanSubject = subject.replace(/[\r\n]+/g, ' ').trim().substring(0, 200);
+  
   console.log("📧 Resend Configuration:", {
     from,
     to,
-    subject,
+    subject: cleanSubject,
     hasApiKey: !!process.env.RESEND_API_KEY,
   });
 
@@ -35,9 +38,9 @@ async function sendViaResend(
     const result = await resend.emails.send({
       from,
       to: [to],
-      subject,
+      subject: cleanSubject,
       html,
-      text: text || subject,
+      text: text || cleanSubject,
     });
 
     if (result.error) {
@@ -127,6 +130,9 @@ async function sendViaSMTP(
   try {
     const transporter = nodemailer.createTransport(transportConfig);
     const from = process.env.MAIL_FROM || "noreply@sasakawa.edu";
+    
+    // Sanitize subject - remove newlines
+    const cleanSubject = subject.replace(/[\r\n]+/g, ' ').trim();
 
     // Verify SMTP connection
     console.log("📧 Verifying SMTP connection...");
@@ -136,9 +142,9 @@ async function sendViaSMTP(
     const result = await transporter.sendMail({
       from,
       to,
-      subject,
+      subject: cleanSubject,
       html,
-      text: text || subject,
+      text: text || cleanSubject,
     });
 
     console.log(`📧 Email sent successfully via SMTP to ${to}: ${subject}`);
@@ -226,7 +232,7 @@ export function getMailer() {
 export const emailTemplates = {
   requestCreated: (requestData: any) => ({
     subject: `New Service Request: ${
-      requestData.description || "Service Request"
+      requestData.eventName || "Service Request"
     }`,
     html: `
       <!DOCTYPE html>
