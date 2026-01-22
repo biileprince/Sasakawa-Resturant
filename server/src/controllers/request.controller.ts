@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { sendHtmlMail, emailTemplates } from "../utils/mail.util";
 import { NotificationHelpers } from "../utils/notification.util";
+import { deleteAttachment } from "../utils/cloudinary.util";
 
 const prisma = new PrismaClient();
 
@@ -651,7 +652,21 @@ export const deleteRequest = async (req: Request, res: Response) => {
         .json({ message: "Cannot delete request with associated invoices" });
     }
 
-    // Delete associated attachments and notifications first
+    // First, get all attachments to delete from storage
+    const attachments = await prisma.attachment.findMany({
+      where: { requestId: id },
+    });
+
+    // Delete attachments from Cloudinary/local storage
+    for (const attachment of attachments) {
+      try {
+        await deleteAttachment(attachment.fileUrl);
+      } catch (error) {
+        console.error(`Failed to delete attachment file: ${attachment.fileUrl}`, error);
+      }
+    }
+
+    // Delete associated attachments and notifications from database
     await prisma.attachment.deleteMany({
       where: { requestId: id },
     });

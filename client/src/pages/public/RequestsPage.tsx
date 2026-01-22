@@ -62,9 +62,9 @@ export default function RequestsPage() {
     <div className="mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">My Service Requests</h1>
-        <Link to="/requests/new" className="btn-green btn-shimmer px-6 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
-          <i className="fas fa-plus-circle"></i>
-          Request Service
+        <Link to="/packages" className="btn-green btn-shimmer px-6 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+          <i className="fas fa-utensils"></i>
+          Order Food Package
         </Link>
       </div>
       {requests.length === 0 ? (
@@ -74,10 +74,10 @@ export default function RequestsPage() {
               <i className="fas fa-file-alt text-gray-400 text-3xl"></i>
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No service requests yet</h3>
-            <p className="text-gray-500 mb-6">You haven't made any service requests. Start by requesting a service for your event.</p>
-            <Link to="/requests/new" className="btn-green btn-shimmer px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2">
-              <i className="fas fa-plus-circle"></i>
-              Request Your First Service
+            <p className="text-gray-500 mb-6">You haven't made any service requests. Browse our food packages to get started.</p>
+            <Link to="/packages" className="btn-green btn-shimmer px-6 py-3 rounded-lg font-medium inline-flex items-center gap-2">
+              <i className="fas fa-utensils"></i>
+              Browse Food Packages
             </Link>
           </div>
         </div>

@@ -164,10 +164,10 @@ export default function ServicesPage() {
                     ))}
                   </ul>
                   <Link
-                    to="/requests/new"
+                    to="/packages"
                     className="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium text-sm group-hover:gap-3 transition-all duration-300"
                   >
-                    Request Service
+                    Order Now
                     <i className="fas fa-arrow-right"></i>
                   </Link>
                 </div>
@@ -191,18 +191,18 @@ export default function ServicesPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
-                  to="/requests/new"
+                  to="/packages"
                   className="bg-accent-yellow-500 hover:bg-accent-yellow-600 text-white inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
-                  <i className="fas fa-plus-circle"></i>
-                  Submit Service Request
+                  <i className="fas fa-shopping-cart"></i>
+                  Browse Packages
                 </Link>
                 <Link
-                  to="/menu"
+                  to="/requests"
                   className="inline-flex items-center gap-2 bg-transparent text-white px-8 py-4 rounded-xl font-semibold border-2 border-white/30 hover:bg-white/10 transition-all duration-300"
                 >
-                  <i className="fas fa-utensils"></i>
-                  View Menu
+                  <i className="fas fa-list-alt"></i>
+                  View Requests
                 </Link>
               </div>
             </div>

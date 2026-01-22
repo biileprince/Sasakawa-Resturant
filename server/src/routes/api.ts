@@ -14,7 +14,8 @@ import { getDepartments } from '../controllers/department.controller';
 import { getAllUsers, updateUserRole } from '../controllers/user.controller';
 import { getUserNotifications, markNotificationAsRead, markAllNotificationsAsRead, getUnreadCount } from '../controllers/notification.controller';
 import { testEmailSending, testEmailTemplate } from '../controllers/email.controller';
-import { uploadToCloudinary } from '../utils/cloudinary.util';
+import { uploadToCloudinary, deleteAttachment } from '../utils/cloudinary.util';
+import { getAllPackages, getAdminPackages, createPackage, updatePackage, deletePackage, seedPackages } from '../controllers/package.controller';
 
 const router = Router();
 
@@ -104,6 +105,56 @@ router.post('/requests/:id/attachments', authenticateRequest, loadCurrentUser, u
 	} catch (e) {
 		console.error('upload attachment error', e);
 		res.status(500).json({ message: 'Failed to upload' });
+	}
+});
+
+// Delete attachment
+router.delete('/attachments/:id', authenticateRequest, loadCurrentUser, async (req: any, res) => {
+	try {
+		const user = req.user;
+		if (!user) return res.status(401).json({ message: 'Unauthorized' });
+		
+		const { id } = req.params;
+		
+		// Find the attachment
+		const attachment = await prisma.attachment.findUnique({
+			where: { id },
+			include: {
+				request: { select: { requesterId: true } },
+			},
+		});
+		
+		if (!attachment) {
+			return res.status(404).json({ message: 'Attachment not found' });
+		}
+		
+		// Check permissions - owner, finance officer, or approver can delete
+		const canDelete = 
+			attachment.uploadedById === user.id ||
+			attachment.request?.requesterId === user.id ||
+			['FINANCE_OFFICER', 'APPROVER'].includes(user.role);
+		
+		if (!canDelete) {
+			return res.status(403).json({ message: 'Not authorized to delete this attachment' });
+		}
+		
+		// Delete from Cloudinary/local storage
+		try {
+			await deleteAttachment(attachment.fileUrl);
+		} catch (error) {
+			console.error('Failed to delete attachment file:', error);
+			// Continue with database deletion even if file deletion fails
+		}
+		
+		// Delete from database
+		await prisma.attachment.delete({
+			where: { id },
+		});
+		
+		res.json({ message: 'Attachment deleted successfully' });
+	} catch (e) {
+		console.error('delete attachment error', e);
+		res.status(500).json({ message: 'Failed to delete attachment' });
 	}
 });
 
@@ -202,5 +253,57 @@ router.patch('/notifications/mark-all-read', authenticateRequest, loadCurrentUse
 // Email testing routes (for debugging)
 router.post('/test-email', testEmailSending);
 router.post('/test-email-template', testEmailTemplate);
+
+// Food Packages - Public route for browsing
+router.get('/food-packages', getAllPackages);
+
+// Food Packages - Admin routes (require authentication)
+router.get('/food-packages/admin', authenticateRequest, loadCurrentUser, getAdminPackages);
+router.post('/food-packages', authenticateRequest, loadCurrentUser, createPackage);
+router.put('/food-packages/:id', authenticateRequest, loadCurrentUser, updatePackage);
+router.delete('/food-packages/:id', authenticateRequest, loadCurrentUser, deletePackage);
+router.post('/food-packages/seed', authenticateRequest, loadCurrentUser, seedPackages);
+
+// Package image upload
+router.post('/food-packages/upload-image', authenticateRequest, loadCurrentUser, upload.single('image'), async (req: any, res) => {
+	try {
+		const user = req.user;
+		console.log('📸 Image upload attempt:', { userId: user?.id, role: user?.role });
+		
+		if (!user) return res.status(401).json({ message: 'Unauthorized' });
+		
+		// Check if user has permission (case-insensitive comparison)
+		const userRole = user.role?.toUpperCase();
+		if (userRole !== 'FINANCE_OFFICER' && userRole !== 'APPROVER') {
+			console.log('❌ Upload denied - role:', user.role);
+			return res.status(403).json({ message: 'Not authorized to upload package images' });
+		}
+		
+		const file = req.file;
+		if (!file) return res.status(400).json({ message: 'No image uploaded' });
+		
+		let imageUrl: string;
+		
+		if (isProduction) {
+			// Upload to Cloudinary in production
+			const cloudinaryResult = await uploadToCloudinary(
+				file.buffer, 
+				file.originalname, 
+				'sasakawa-packages'
+			);
+			imageUrl = cloudinaryResult.secure_url;
+		} else {
+			// Use full URL with server base in development (not just relative path)
+			const serverUrl = process.env.SERVER_URL || 'http://localhost:4000';
+			imageUrl = `${serverUrl}/uploads/${file.filename}`;
+		}
+		
+		console.log('✅ Image uploaded successfully:', imageUrl);
+		res.status(200).json({ imageUrl });
+	} catch (e) {
+		console.error('upload package image error', e);
+		res.status(500).json({ message: 'Failed to upload image' });
+	}
+});
 
 export default router;

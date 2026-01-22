@@ -63,19 +63,19 @@ function Hero({ isSignedIn }: { isSignedIn: boolean }) {
               </Link>
               {isSignedIn ? (
                 <Link
-                  to="/requests/new"
+                  to="/packages"
                   className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 inline-flex items-center justify-center gap-3"
                 >
-                  <i className="fas fa-plus-circle"></i>
-                  Submit New Request
+                  <i className="fas fa-shopping-cart"></i>
+                  Order Now
                 </Link>
               ) : (
                 <Link
-                  to="/sign-in"
+                  to="/packages"
                   className="bg-white/90 hover:bg-white text-primary-700 hover:text-primary-800 px-8 py-4 text-lg font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 inline-flex items-center justify-center gap-3"
                 >
-                  <i className="fas fa-sign-in-alt"></i>
-                  Get Started
+                  <i className="fas fa-utensils"></i>
+                  Browse Packages
                 </Link>
               )}
             </div>
@@ -257,11 +257,11 @@ function HowItWorks() {
 
         <div className="text-center mt-12">
           <Link
-            to="/requests/new"
+            to="/packages"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300"
           >
-            <i className="fas fa-plus-circle"></i>
-            Start Your Request
+            <i className="fas fa-shopping-cart"></i>
+            Start Your Order
           </Link>
         </div>
       </div>
@@ -305,11 +305,11 @@ function FeaturedMenuItems() {
             events
           </p>
           <Link
-            to="/menu"
+            to="/packages"
             className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300"
           >
-            <i className="fas fa-book-open"></i>
-            View Full Menu
+            <i className="fas fa-shopping-cart"></i>
+            Browse All Packages
           </Link>
         </div>
 
@@ -329,10 +329,10 @@ function FeaturedMenuItems() {
                 {category.description}
               </p>
               <Link
-                to="/requests/new"
+                to="/packages"
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300"
               >
-                <i className="fas fa-plus-circle"></i>
+                <i className="fas fa-shopping-cart"></i>
                 Order Now
               </Link>
             </div>
@@ -360,11 +360,11 @@ function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
             {isSignedIn ? (
               <>
                 <Link
-                  to="/requests/new"
+                  to="/packages"
                   className="bg-white hover:bg-gray-50 text-primary-700 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
                 >
-                  <i className="fas fa-plus-circle"></i>
-                  Request Service Now
+                  <i className="fas fa-shopping-cart"></i>
+                  Order Now
                 </Link>
                 <Link
                   to="/requests"
@@ -377,11 +377,11 @@ function CTASection({ isSignedIn }: { isSignedIn: boolean }) {
             ) : (
               <>
                 <Link
-                  to="/requests/new"
+                  to="/packages"
                   className="bg-white hover:bg-gray-50 text-primary-700 px-10 py-5 rounded-xl text-lg font-bold transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 flex items-center justify-center gap-3"
                 >
                   <i className="fas fa-utensils"></i>
-                  Request Service
+                  Browse Packages
                 </Link>
                 <Link
                   to="/services"

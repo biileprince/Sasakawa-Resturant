@@ -272,3 +272,20 @@ model AuditLog {
   
   createdAt   DateTime  @default(now())
 }
+
+// Food Package model for managing catering packages
+model FoodPackage {
+  id              String    @id @default(uuid())
+  packageId       String    @unique  // Short identifier like "breakfast_basic"
+  name            String
+  category        String    // Service type like "Breakfast Service", "Lunch Service"
+  pricePerPerson  Decimal   @db.Decimal(10, 2)
+  description     String
+  image           String    // URL to package image
+  includes        String[]  // Array of items included in the package
+  isActive        Boolean   @default(true)
+  sortOrder       Int       @default(0)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}

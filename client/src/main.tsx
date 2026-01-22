@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import { ToastProvider } from './contexts/ToastContext';
 import { CurrentUserProvider } from './contexts/CurrentUserContext';
+import { CartProvider } from './contexts/CartContext';
 import './index.css';
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -23,9 +24,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
           <CurrentUserProvider>
-            <ApiAuthBridge>
-              <App />
-            </ApiAuthBridge>
+            <CartProvider>
+              <ApiAuthBridge>
+                <App />
+              </ApiAuthBridge>
+            </CartProvider>
           </CurrentUserProvider>
         </ToastProvider>
       </QueryClientProvider>

@@ -1,4 +1,56 @@
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+// Initialize Resend client lazily
+let resendClient: Resend | null = null;
+
+function getResendClient(): Resend | null {
+  if (process.env.RESEND_API_KEY && !resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resendClient;
+}
+
+async function sendViaResend(
+  to: string,
+  subject: string,
+  html: string,
+  text?: string
+): Promise<any> {
+  const from = process.env.MAIL_FROM || "onboarding@resend.dev";
+  const resend = getResendClient();
+  
+  console.log("📧 Resend Configuration:", {
+    from,
+    to,
+    subject,
+    hasApiKey: !!process.env.RESEND_API_KEY,
+  });
+
+  if (!resend) {
+    throw new Error("RESEND_API_KEY not set - please configure Resend settings");
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from,
+      to: [to],
+      subject,
+      html,
+      text: text || subject,
+    });
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    console.log(`📧 Email sent successfully via Resend to ${to}: ${subject}`);
+    return result;
+  } catch (error) {
+    console.error("📧 Resend Error:", error);
+    throw error;
+  }
+}
 
 async function sendViaSMTP(
   to: string,
@@ -97,7 +149,7 @@ async function sendViaSMTP(
   }
 }
 
-// Email service utility - Use SMTP for sending
+// Email service utility - Use Resend as primary, SMTP as fallback
 export async function sendHtmlMail(
   to: string,
   subject: string,
@@ -108,10 +160,17 @@ export async function sendHtmlMail(
     console.log("📧 Attempting to send email:", {
       to,
       subject,
-      service: "SMTP",
+      service: process.env.RESEND_API_KEY ? "Resend" : "SMTP",
     });
 
-    await sendViaSMTP(to, subject, html, text);
+    // Use Resend as primary email service
+    if (process.env.RESEND_API_KEY) {
+      await sendViaResend(to, subject, html, text);
+    } else {
+      // Fallback to SMTP if Resend is not configured
+      console.log("📧 Resend not configured, falling back to SMTP");
+      await sendViaSMTP(to, subject, html, text);
+    }
   } catch (error) {
     console.error(`Failed to send email to ${to}:`, error);
     throw error;

@@ -8,11 +8,15 @@ export async function testEmailSending(req: any, res: any) {
       return res.status(400).json({ error: 'Email recipient is required' });
     }
 
+    // Determine email service being used
+    const emailService = process.env.RESEND_API_KEY ? 'Resend' : 'SMTP';
+    
     // Test simple email
     const testSubject = subject || 'Test Email from Sasakawa Restaurant';
     const testMessage = message || 'This is a test email to verify the email service is working correctly.';
     
     console.log('🧪 Testing email functionality...');
+    console.log('📧 Email Service:', emailService);
     console.log('📧 Recipient:', to);
     console.log('📧 Subject:', testSubject);
     
@@ -39,8 +43,11 @@ export async function testEmailSending(req: any, res: any) {
             <p>${testMessage}</p>
             <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
             <p><strong>Environment:</strong> ${process.env.NODE_ENV || 'development'}</p>
-            <p><strong>Email Service:</strong> SMTP</p>
-            <p><strong>SMTP Host:</strong> ${process.env.SMTP_HOST || 'Not configured'}</p>
+            <p><strong>Email Service:</strong> ${emailService}</p>
+            ${emailService === 'Resend' 
+              ? `<p><strong>From:</strong> ${process.env.MAIL_FROM || 'onboarding@resend.dev'}</p>`
+              : `<p><strong>SMTP Host:</strong> ${process.env.SMTP_HOST || 'Not configured'}</p>`
+            }
             <div style="text-align: center; margin-top: 20px;">
               <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" class="button">Visit Application</a>
             </div>
@@ -59,8 +66,10 @@ export async function testEmailSending(req: any, res: any) {
         to,
         subject: testSubject,
         timestamp: new Date().toISOString(),
-        service: 'SMTP',
-        smtpHost: process.env.SMTP_HOST || 'Not configured'
+        service: emailService,
+        from: emailService === 'Resend' 
+          ? (process.env.MAIL_FROM || 'onboarding@resend.dev')
+          : (process.env.SMTP_HOST || 'Not configured')
       }
     });
   } catch (error) {

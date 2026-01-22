@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { UserButton, useUser } from "@clerk/clerk-react";
-import { useCurrentUser } from "../contexts/CurrentUserContext";
+import { useCurrentUserContext } from "../contexts/CurrentUserContext";
+import { useCart } from "../contexts/CartContext";
 import NotificationDropdown from "./NotificationDropdown";
 import UCCLogo from "./UCCLogo";
 
@@ -18,7 +19,7 @@ const getNavItems = (currentUser: any): NavItem[] => {
   const baseItems: NavItem[] = [
     { to: "/", label: "Home", icon: "fas fa-home" },
     { to: "/services", label: "Our Services", icon: "fas fa-concierge-bell" },
-    { to: "/menu", label: "Menu", icon: "fas fa-utensils" },
+    { to: "/packages", label: "Order Food", icon: "fas fa-utensils" },
   ];
 
   // Role-specific navigation
@@ -30,25 +31,20 @@ const getNavItems = (currentUser: any): NavItem[] => {
     baseItems.push(
       {
         to: "/approvals",
-        label: "Approval Dashboard",
+        label: "Approvals",
         icon: "fas fa-tasks",
         authOnly: true,
       },
       {
         to: "/requests",
-        label: "Requests List",
+        label: "All Requests",
         icon: "fas fa-list-alt",
         authOnly: true,
       }
     );
-  } else {
+  } else if (currentUser) {
     // Regular users (REQUESTER) see request-focused navigation
     baseItems.push(
-      {
-        to: "/requests/new",
-        label: "Request Service",
-        icon: "fas fa-plus-circle",
-      },
       {
         to: "/requests",
         label: "My Requests",
@@ -62,7 +58,7 @@ const getNavItems = (currentUser: any): NavItem[] => {
   if (currentUser?.role === "FINANCE_OFFICER") {
     baseItems.push({
       to: "/finance",
-      label: "Finance Center",
+      label: "Finance",
       icon: "fas fa-chart-line",
       authOnly: true,
       children: [
@@ -70,11 +66,6 @@ const getNavItems = (currentUser: any): NavItem[] => {
           to: "/finance",
           label: "Dashboard Overview",
           icon: "fas fa-tachometer-alt",
-        },
-        {
-          to: "/approvals",
-          label: "Approve Requests",
-          icon: "fas fa-check-circle",
         },
         {
           to: "/invoices",
@@ -87,7 +78,20 @@ const getNavItems = (currentUser: any): NavItem[] => {
           icon: "fas fa-credit-card",
         },
         { to: "/users", label: "User Management", icon: "fas fa-users-cog" },
+        {
+          to: "/package-management",
+          label: "Manage Packages",
+          icon: "fas fa-box",
+        },
       ],
+    });
+  } else if (currentUser?.role === "APPROVER") {
+    // Approver can also manage packages
+    baseItems.push({
+      to: "/package-management",
+      label: "Manage Packages",
+      icon: "fas fa-box",
+      authOnly: true,
     });
   }
 
@@ -100,13 +104,18 @@ const getNavItems = (currentUser: any): NavItem[] => {
 };
 
 export default function Navbar() {
-  const { isSignedIn } = useUser();
-  const currentUser = useCurrentUser();
+  const { isSignedIn, isLoaded: isClerkLoaded } = useUser();
+  const { user: currentUser, isLoading: isUserLoading } = useCurrentUserContext();
+  const { getItemCount } = useCart();
   const [open, setOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
-  const navItems = getNavItems(currentUser);
+  // Wait for both Clerk and user data to load before showing role-based navigation
+  const isFullyLoaded = isClerkLoaded && (!isSignedIn || (isSignedIn && !isUserLoading));
+  
+  const navItems = getNavItems(isFullyLoaded ? currentUser : null);
+  const cartItemCount = getItemCount();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -255,6 +264,20 @@ export default function Navbar() {
           {filtered.map((item: NavItem) => (
             <DropdownItem key={item.to} item={item} />
           ))}
+          
+          {/* Cart Icon */}
+          <Link
+            to="/checkout"
+            className="relative p-2 text-gray-600 hover:text-primary-600 transition-colors"
+          >
+            <i className="fas fa-shopping-cart text-lg"></i>
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                {cartItemCount > 9 ? "9+" : cartItemCount}
+              </span>
+            )}
+          </Link>
+          
           {isSignedIn && (
             <div className="ml-4 pl-4 border-l border-gray-200 flex items-center gap-3">
               <NotificationDropdown />
@@ -273,6 +296,19 @@ export default function Navbar() {
 
         {/* Mobile Menu Toggle */}
         <div className="lg:hidden flex items-center gap-3">
+          {/* Mobile Cart Icon */}
+          <Link
+            to="/checkout"
+            className="relative p-2 text-gray-600 hover:text-primary-600 transition-colors"
+          >
+            <i className="fas fa-shopping-cart text-lg"></i>
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                {cartItemCount > 9 ? "9+" : cartItemCount}
+              </span>
+            )}
+          </Link>
+          
           {isSignedIn && (
             <>
               <NotificationDropdown />
