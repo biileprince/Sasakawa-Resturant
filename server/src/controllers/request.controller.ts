@@ -213,19 +213,19 @@ export const createRequest = async (req: Request, res: Response) => {
           await sendHtmlMail(
             recipient.email,
             emailTemplate.subject,
-            emailTemplate.html
+            emailTemplate.html,
           );
         } catch (emailError) {
           console.error(
             `Failed to send email to ${recipient.email}:`,
-            emailError
+            emailError,
           );
           // Don't throw error - email failure shouldn't break request creation
         }
       }
 
       console.log(
-        `Request created notifications sent to ${approversAndFinance.length} recipients`
+        `Request created notifications sent to ${approversAndFinance.length} recipients`,
       );
     } catch (emailError) {
       console.error("Error sending request creation emails:", emailError);
@@ -279,7 +279,7 @@ export const updateRequest = async (req: Request, res: Response) => {
 
     console.log(
       "updateRequest - received data:",
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(req.body, null, 2),
     );
 
     const schema = z.object({
@@ -296,6 +296,13 @@ export const updateRequest = async (req: Request, res: Response) => {
       attendees: z.number().positive().optional(),
       serviceType: z.string().optional(),
       description: z.string().optional(),
+      selectedPackageId: z.string().optional().nullable(),
+      packageName: z.string().optional().nullable(),
+      pricePerPerson: z
+        .union([z.number(), z.string().transform((val) => parseFloat(val))])
+        .refine((val) => val > 0, "Price per person must be positive")
+        .optional()
+        .nullable(),
       fundingSource: z.string().min(2).optional(),
       contactPhone: z.string().optional(),
       departmentId: z.string().uuid().optional(),
@@ -324,6 +331,15 @@ export const updateRequest = async (req: Request, res: Response) => {
     const updateData = parsed.data;
     if (updateData.eventDate) {
       (updateData as any).eventDate = new Date(updateData.eventDate);
+    }
+    if (updateData.selectedPackageId === "") {
+      (updateData as any).selectedPackageId = null;
+    }
+    if (updateData.packageName === "") {
+      (updateData as any).packageName = null;
+    }
+    if (updateData.pricePerPerson === 0) {
+      (updateData as any).pricePerPerson = null;
     }
     // Handle null departmentId by converting to undefined
     if (updateData.departmentId === null) {
@@ -367,7 +383,7 @@ async function transitionStatus(
   newStatus: string,
   approverId?: string,
   reason?: string,
-  comments?: string
+  comments?: string,
 ) {
   try {
     const updateData: any = {
@@ -416,7 +432,7 @@ async function transitionStatus(
         await sendHtmlMail(
           updated.requester.email,
           emailTemplate.subject,
-          emailTemplate.html
+          emailTemplate.html,
         );
 
         // Also notify finance officers about the approval
@@ -426,7 +442,7 @@ async function transitionStatus(
 
         const financeEmailTemplate = emailTemplates.requestApprovedForFinance(
           updated,
-          comments
+          comments,
         );
 
         for (const financeOfficer of financeOfficers) {
@@ -434,18 +450,18 @@ async function transitionStatus(
             await sendHtmlMail(
               financeOfficer.email,
               financeEmailTemplate.subject,
-              financeEmailTemplate.html
+              financeEmailTemplate.html,
             );
           } catch (emailError) {
             console.error(
               `Failed to send finance notification to ${financeOfficer.email}:`,
-              emailError
+              emailError,
             );
           }
         }
 
         console.log(
-          `Approval notification sent to ${updated.requester.email} and ${financeOfficers.length} finance officers`
+          `Approval notification sent to ${updated.requester.email} and ${financeOfficers.length} finance officers`,
         );
 
         // Create in-app notifications
@@ -456,11 +472,11 @@ async function transitionStatus(
         await sendHtmlMail(
           updated.requester.email,
           emailTemplate.subject,
-          emailTemplate.html
+          emailTemplate.html,
         );
 
         console.log(
-          `Rejection notification sent to ${updated.requester.email}`
+          `Rejection notification sent to ${updated.requester.email}`,
         );
 
         // Create in-app notification
@@ -469,12 +485,12 @@ async function transitionStatus(
         // Send revision notification to requester
         const emailTemplate = emailTemplates.requestRevision(
           updated,
-          comments || reason
+          comments || reason,
         );
         await sendHtmlMail(
           updated.requester.email,
           emailTemplate.subject,
-          emailTemplate.html
+          emailTemplate.html,
         );
 
         console.log(`Revision notification sent to ${updated.requester.email}`);
@@ -482,7 +498,7 @@ async function transitionStatus(
         // Create in-app notification
         await NotificationHelpers.notifyRequestRevision(
           updated,
-          comments || reason
+          comments || reason,
         );
       }
     } catch (emailError) {
@@ -587,7 +603,7 @@ export const requestRevision = async (req: Request, res: Response) => {
     "NEEDS_REVISION",
     user.id,
     undefined,
-    comments
+    comments,
   );
 };
 
@@ -631,11 +647,9 @@ export const deleteRequest = async (req: Request, res: Response) => {
         .status(403)
         .json({ message: "You can only delete your own requests" });
     } else if (!["REQUESTER", "FINANCE_OFFICER"].includes(user.role)) {
-      return res
-        .status(403)
-        .json({
-          message: "Only requesters and finance officers can delete requests",
-        });
+      return res.status(403).json({
+        message: "Only requesters and finance officers can delete requests",
+      });
     }
 
     // Only allow deletion of rejected requests
@@ -662,7 +676,10 @@ export const deleteRequest = async (req: Request, res: Response) => {
       try {
         await deleteAttachment(attachment.fileUrl);
       } catch (error) {
-        console.error(`Failed to delete attachment file: ${attachment.fileUrl}`, error);
+        console.error(
+          `Failed to delete attachment file: ${attachment.fileUrl}`,
+          error,
+        );
       }
     }
 

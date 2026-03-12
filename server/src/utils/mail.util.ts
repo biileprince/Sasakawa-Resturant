@@ -15,14 +15,17 @@ async function sendViaResend(
   to: string,
   subject: string,
   html: string,
-  text?: string
+  text?: string,
 ): Promise<any> {
   const from = process.env.MAIL_FROM || "onboarding@resend.dev";
   const resend = getResendClient();
-  
+
   // Sanitize subject - remove newlines and limit length
-  const cleanSubject = subject.replace(/[\r\n]+/g, ' ').trim().substring(0, 200);
-  
+  const cleanSubject = subject
+    .replace(/[\r\n]+/g, " ")
+    .trim()
+    .substring(0, 200);
+
   console.log("📧 Resend Configuration:", {
     from,
     to,
@@ -31,7 +34,9 @@ async function sendViaResend(
   });
 
   if (!resend) {
-    throw new Error("RESEND_API_KEY not set - please configure Resend settings");
+    throw new Error(
+      "RESEND_API_KEY not set - please configure Resend settings",
+    );
   }
 
   try {
@@ -59,7 +64,7 @@ async function sendViaSMTP(
   to: string,
   subject: string,
   html: string,
-  text?: string
+  text?: string,
 ): Promise<any> {
   const nodeEnv = process.env.NODE_ENV || "development";
   const host = process.env.SMTP_HOST;
@@ -130,9 +135,9 @@ async function sendViaSMTP(
   try {
     const transporter = nodemailer.createTransport(transportConfig);
     const from = process.env.MAIL_FROM || "noreply@sasakawa.edu";
-    
+
     // Sanitize subject - remove newlines
-    const cleanSubject = subject.replace(/[\r\n]+/g, ' ').trim();
+    const cleanSubject = subject.replace(/[\r\n]+/g, " ").trim();
 
     // Verify SMTP connection
     console.log("📧 Verifying SMTP connection...");
@@ -160,7 +165,7 @@ export async function sendHtmlMail(
   to: string,
   subject: string,
   html: string,
-  text?: string
+  text?: string,
 ) {
   try {
     console.log("📧 Attempting to send email:", {
@@ -186,7 +191,7 @@ export async function sendHtmlMail(
 export async function sendSimpleMail(
   to: string,
   subject: string,
-  text: string
+  text: string,
 ) {
   // Convert text to basic HTML
   const html = `<p>${text.replace(/\n/g, "<br>")}</p>`;
@@ -231,8 +236,8 @@ export function getMailer() {
 // Email templates
 export const emailTemplates = {
   requestCreated: (requestData: any) => ({
-    subject: `New Service Request: ${
-      requestData.eventName || "Service Request"
+    subject: `Service Request Submitted: ${
+      requestData.requestNo || requestData.eventName || "Service Request"
     }`,
     html: `
       <!DOCTYPE html>
@@ -275,7 +280,7 @@ export const emailTemplates = {
                       } ${
                         requestData.pricePerPerson
                           ? `(₵${Number(requestData.pricePerPerson).toFixed(
-                              2
+                              2,
                             )}/person)`
                           : ""
                       }</td></tr>`
@@ -290,15 +295,17 @@ export const emailTemplates = {
                 <tr><td style="padding: 5px 0; font-weight: bold;">Requested by:</td><td>${
                   requestData.requester?.name || "N/A"
                 } ${
-      requestData.requester?.email ? `(${requestData.requester.email})` : ""
-    }</td></tr>
+                  requestData.requester?.email
+                    ? `(${requestData.requester.email})`
+                    : ""
+                }</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${Number(
-                  requestData.estimateAmount || 0
+                  requestData.estimateAmount || 0,
                 ).toFixed(2)}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Event Date:</td><td>${
                   requestData.eventDate
                     ? new Date(requestData.eventDate).toLocaleDateString(
-                        "en-GB"
+                        "en-GB",
                       )
                     : "N/A"
                 }</td></tr>
@@ -307,8 +314,8 @@ export const emailTemplates = {
             <p>Please log in to the system to review and process this request.</p>
             <div style="text-align: center;">
               <a href="${process.env.FRONTEND_URL}/requests/${
-      requestData.id
-    }" class="button">Review Request</a>
+                requestData.id
+              }" class="button">Review Request</a>
             </div>
           </div>
           <div class="footer">
@@ -322,7 +329,7 @@ export const emailTemplates = {
 
   requestApproved: (requestData: any) => ({
     subject: `Service Request Approved: ${
-      requestData.description || "Service Request"
+      requestData.requestNo || requestData.eventName || "Service Request"
     }`,
     html: `
       <!DOCTYPE html>
@@ -343,10 +350,10 @@ export const emailTemplates = {
       <body>
         <div class="container">
           <div class="header">
-            <h1>✅ Request Approved</h1>
+            <h1>Request Approved</h1>
           </div>
           <div class="content">
-            <p>Great news! Your service request has been approved.</p>
+            <p>Your service request has been approved.</p>
             <div class="details">
               <table>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Request ID:</td><td>#${
@@ -362,7 +369,7 @@ export const emailTemplates = {
                       } ${
                         requestData.pricePerPerson
                           ? `(₵${Number(requestData.pricePerPerson).toFixed(
-                              2
+                              2,
                             )}/person)`
                           : ""
                       }</td></tr>`
@@ -375,12 +382,12 @@ export const emailTemplates = {
                   requestData.approver?.name || "N/A"
                 }</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${Number(
-                  requestData.estimateAmount || 0
+                  requestData.estimateAmount || 0,
                 ).toFixed(2)}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Event Date:</td><td>${
                   requestData.eventDate
                     ? new Date(requestData.eventDate).toLocaleDateString(
-                        "en-GB"
+                        "en-GB",
                       )
                     : "N/A"
                 }</td></tr>
@@ -389,8 +396,8 @@ export const emailTemplates = {
             <p>Your request is now ready for processing. You'll receive further updates as progress is made.</p>
             <div style="text-align: center;">
               <a href="${process.env.FRONTEND_URL}/requests/${
-      requestData.id
-    }" class="button">View Request</a>
+                requestData.id
+              }" class="button">View Request</a>
             </div>
           </div>
           <div class="footer">
@@ -403,9 +410,9 @@ export const emailTemplates = {
   }),
 
   requestRejected: (requestData: any) => ({
-    subject: `Service Request Update: ${
-      requestData.description || "Service Request"
-    }`,
+    subject: `Action Required: Update Service Request ${
+      requestData.requestNo || requestData.eventName || ""
+    }`.trim(),
     html: `
       <!DOCTYPE html>
       <html>
@@ -465,7 +472,7 @@ export const emailTemplates = {
 
   invoiceGenerated: (invoiceData: any) => ({
     subject: `Invoice Generated: ${
-      invoiceData.description || "Service Request"
+      invoiceData.invoiceNo || invoiceData.description || "Service Request"
     }`,
     html: `
       <!DOCTYPE html>
@@ -486,7 +493,7 @@ export const emailTemplates = {
       <body>
         <div class="container">
           <div class="header">
-            <h1>📄 Invoice Generated</h1>
+            <h1>Invoice Generated</h1>
           </div>
           <div class="content">
             <p>An invoice has been generated for your completed service request.</p>
@@ -499,7 +506,7 @@ export const emailTemplates = {
                   invoiceData.description || "Service Request"
                 }</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${Number(
-                  invoiceData.netAmount || invoiceData.amount || 0
+                  invoiceData.netAmount || invoiceData.amount || 0,
                 ).toFixed(2)}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Due Date:</td><td>${
                   invoiceData.dueDate
@@ -533,7 +540,11 @@ export const emailTemplates = {
   },
 
   paymentReceived: (paymentData: any) => ({
-    subject: `Payment Received: Invoice ${paymentData.invoice?.invoiceNumber}`,
+    subject: `Payment Received: Invoice ${
+      paymentData.invoice?.invoiceNo ||
+      paymentData.invoice?.invoiceNumber ||
+      "N/A"
+    }`,
     html: `
       <!DOCTYPE html>
       <html>
@@ -553,23 +564,25 @@ export const emailTemplates = {
       <body>
         <div class="container">
           <div class="header">
-            <h1>💰 Payment Received</h1>
+            <h1>Payment Received</h1>
           </div>
           <div class="content">
-            <p>We have successfully received your payment. Thank you!</p>
+            <p>We have received your payment and updated the invoice status.</p>
             <div class="details">
               <table>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Payment ID:</td><td>#${
                   paymentData.id
                 }</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${
-                  paymentData.invoice?.invoiceNumber
+                  paymentData.invoice?.invoiceNo ||
+                  paymentData.invoice?.invoiceNumber ||
+                  "N/A"
                 }</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Amount:</td><td>₵${Number(
-                  paymentData.amount || 0
+                  paymentData.amount || 0,
                 ).toFixed(2)}</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Payment Method:</td><td>${
-                  paymentData.paymentMethod
+                  paymentData.paymentMethod || paymentData.method || "N/A"
                 }</td></tr>
                 ${
                   paymentData.chequeNumber
@@ -577,7 +590,7 @@ export const emailTemplates = {
                     : ""
                 }
                 <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(
-                  paymentData.paymentDate
+                  paymentData.paymentDate,
                 ).toLocaleDateString("en-GB")}</td></tr>
               </table>
             </div>
@@ -640,7 +653,7 @@ export const emailTemplates = {
         <body>
           <div class="container">
             <div class="header">
-              <h1>💰 Payment Recorded</h1>
+              <h1>Payment Recorded</h1>
             </div>
             <div class="content">
               <p>We have received and recorded your payment for invoice <strong>#${invoiceNumber}</strong> (${description}).</p>
@@ -649,16 +662,16 @@ export const emailTemplates = {
                   <tr><td style="padding: 5px 0; font-weight: bold;">Payment ID:</td><td>#${paymentId}</td></tr>
                   <tr><td style="padding: 5px 0; font-weight: bold;">Invoice #:</td><td>${invoiceNumber}</td></tr>
                   <tr><td style="padding: 5px 0; font-weight: bold;">Payment Amount:</td><td>₵${paidAmount.toFixed(
-                    2
+                    2,
                   )}</td></tr>
                   <tr><td style="padding: 5px 0; font-weight: bold;">Total Paid to Date:</td><td>₵${totalPaid.toFixed(
-                    2
+                    2,
                   )}</td></tr>
                   <tr><td style="padding: 5px 0; font-weight: bold;">Invoice Total:</td><td>₵${invoiceAmount.toFixed(
-                    2
+                    2,
                   )}</td></tr>
                   <tr><td style="padding: 5px 0; font-weight: bold;">Outstanding Balance:</td><td>₵${outstanding.toFixed(
-                    2
+                    2,
                   )}</td></tr>
                   <tr><td style="padding: 5px 0; font-weight: bold;">Payment Method:</td><td>${paymentMethod}</td></tr>
                   ${
@@ -693,8 +706,8 @@ export const emailTemplates = {
   },
 
   requestApprovedForFinance: (requestData: any, comments?: string) => ({
-    subject: `Request Approved - Ready for Finance: ${
-      requestData.description || "Service Request"
+    subject: `Finance Action Required: ${
+      requestData.requestNo || requestData.eventName || "Service Request"
     }`,
     html: `
       <!DOCTYPE html>
@@ -715,7 +728,7 @@ export const emailTemplates = {
       <body>
         <div class="container">
           <div class="header">
-            <h1>💼 Request Approved - Finance Action Required</h1>
+            <h1>Finance Action Required</h1>
           </div>
           <div class="content">
             <p>A service request has been approved and is now ready for finance processing.</p>
@@ -737,7 +750,7 @@ export const emailTemplates = {
                       } ${
                         requestData.pricePerPerson
                           ? `(₵${Number(requestData.pricePerPerson).toFixed(
-                              2
+                              2,
                             )}/person)`
                           : ""
                       }</td></tr>`
@@ -753,7 +766,7 @@ export const emailTemplates = {
                   requestData.approver?.name || "N/A"
                 }</td></tr>
                 <tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>₵${Number(
-                  requestData.estimateAmount || 0
+                  requestData.estimateAmount || 0,
                 ).toFixed(2)}</td></tr>
                 ${
                   comments
@@ -765,8 +778,8 @@ export const emailTemplates = {
             <p>Please proceed with financial processing and invoice generation.</p>
             <div style="text-align: center;">
               <a href="${process.env.FRONTEND_URL}/requests/${
-      requestData.id
-    }" class="button">Process Request</a>
+                requestData.id
+              }" class="button">Process Request</a>
             </div>
           </div>
           <div class="footer">
@@ -780,7 +793,7 @@ export const emailTemplates = {
 
   requestRevision: (requestData: any, comments?: string) => ({
     subject: `Revision Required: ${
-      requestData.description || "Service Request"
+      requestData.requestNo || requestData.eventName || "Service Request"
     }`,
     html: `
       <!DOCTYPE html>
@@ -801,7 +814,7 @@ export const emailTemplates = {
       <body>
         <div class="container">
           <div class="header">
-            <h1>📝 Revision Required</h1>
+            <h1>Revision Required</h1>
           </div>
           <div class="content">
             <p>Your service request requires some revisions before it can be processed further.</p>

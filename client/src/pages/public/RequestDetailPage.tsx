@@ -14,6 +14,27 @@ import { useCurrentUser } from "../../contexts/CurrentUserContext";
 import AttachmentViewer from "../../components/AttachmentViewer";
 import ApprovalModal from "../../components/ApprovalModal";
 
+const ORDER_SUMMARY_MARKER = "--- Cart Summary ---";
+
+function splitOrderDescription(description?: string | null) {
+  const safeDescription = (description || "").trim();
+  if (!safeDescription.includes(ORDER_SUMMARY_MARKER)) {
+    return {
+      notes: safeDescription,
+      orderSummary: "",
+      isOrderRequest: false,
+    };
+  }
+
+  const [notesPart, ...summaryParts] =
+    safeDescription.split(ORDER_SUMMARY_MARKER);
+  return {
+    notes: notesPart.trim(),
+    orderSummary: summaryParts.join(ORDER_SUMMARY_MARKER).trim(),
+    isOrderRequest: true,
+  };
+}
+
 export default function RequestDetailPage() {
   const { id } = useParams();
   const user = useCurrentUser();
@@ -122,6 +143,11 @@ export default function RequestDetailPage() {
     ["SUBMITTED", "NEEDS_REVISION"].includes(data.status);
   const canFulfill =
     user?.capabilities?.canCreatePayment && data.status === "APPROVED";
+  const parsedDescription = splitOrderDescription(data.description);
+  const orderLines = parsedDescription.orderSummary
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 
   return (
     <div className="container mx-auto px-4 py-6 sm:py-8">
@@ -387,7 +413,28 @@ export default function RequestDetailPage() {
               )}
             </div>
 
-            {data.description && (
+            {parsedDescription.isOrderRequest && orderLines.length > 0 && (
+              <div className="mt-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <i className="fas fa-shopping-cart text-gray-400"></i>
+                  <span className="font-medium text-gray-700">
+                    Order Summary
+                  </span>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+                  {orderLines.map((line, index) => (
+                    <p
+                      key={`${line}-${index}`}
+                      className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed"
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {parsedDescription.notes && (
               <div className="mt-6">
                 <div className="flex items-center gap-2 mb-3">
                   <i className="fas fa-file-text text-gray-400"></i>
@@ -395,7 +442,7 @@ export default function RequestDetailPage() {
                 </div>
                 <div className="bg-gray-50 border rounded-lg p-4">
                   <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                    {data.description}
+                    {parsedDescription.notes}
                   </p>
                 </div>
               </div>

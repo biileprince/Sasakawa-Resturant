@@ -84,6 +84,9 @@ export interface UpdateServiceRequestInput {
   attendees?: number;
   serviceType?: string;
   description?: string;
+  selectedPackageId?: string;
+  packageName?: string;
+  pricePerPerson?: number;
   fundingSource?: string;
   contactPhone?: string;
   departmentId?: string;
